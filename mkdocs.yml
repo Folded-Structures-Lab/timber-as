@@ -1,0 +1,23 @@
+site_name: My Docs
+
+theme:
+  name: readthedocs
+
+plugins:
+  - search 
+  - mkdocstrings:
+      handlers:
+                python:
+                    setup_commands:
+                        - import sys
+                        - sys.path.append('../')
+
+nav:
+  - timberas docs: index.md
+  - tutorials.md
+  - How-To Guides: how-to-guides.md
+  - API: reference.md
+  - explanation.md
+
+watch:
+  - src/timberas

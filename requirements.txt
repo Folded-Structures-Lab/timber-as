@@ -1,0 +1,8 @@
+numpy==1.25.0
+pandas==2.0.2
+python-dateutil==2.8.2
+pytz==2023.3
+six==1.16.0
+# Editable install with no version control (timberas==0.0.1)
+-e c:\users\uqjgatta\documents\github\timber-as\src
+tzdata==2023.3
