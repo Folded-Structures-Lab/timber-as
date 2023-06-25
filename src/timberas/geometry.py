@@ -6,29 +6,52 @@ Created on Fri Nov 18 13:37:31 2022
 """
 from __future__ import annotations
 
+
+import pandas as pd
+from importlib.resources import files
 from dataclasses import dataclass, field
 from timberas.shapes import rectangle
-
-
 from math import nan, isnan, floor, log10
 
-# from enum import Enum
-# class SectionTypes(Enum):
-#     RECTANGLE: 'rectangle'
-#     ROUND: 'round'
+from enum import Enum
+
+
+class SectionTypes(str, Enum):
+    '''TODO'''
+    #NOTE: can use StrEnum from Python 3.11
+    SINGLE_BOARD= 'single_board'
+    MULTI_BOARD='multi_board'
+    ROUND= 'round'
+
+
+def import_section_library() -> pd.DataFrame:
+    """
+    Imports a section library from a CSV file.
+
+    The CSV file should be located at 'timberas.data/section_library.csv'.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the contents of the section library CSV file.
+
+    Raises:
+        FileNotFoundError: If the CSV file does not exist.
+    """
+    return pd.read_csv(files('timberas.data').joinpath('section_library.csv'))
+
+
 
 
 @dataclass(kw_only=True)
-class BlockSection():
+class TimberSection():
     name: str = ''
     section: str = ''
     sec_type: str = ''
 
     n: int = 1
-    b_i: float = 10
+    b: float = 10
     d: float = nan
-    b: float = nan
 
+    b_tot: float = nan
     A_g: float = nan
     I_x: float = nan
     I_y: float = nan
@@ -49,11 +72,11 @@ class BlockSection():
 
     def __post_init__(self):
         if self.sec_type != '':
-            self.b = self.n * self.b_i
+            self.b_tot = self.n * self.b
             self.solve_shape()
 
     def solve_shape(self):
-        if self.sec_type in ['rectangle']:
+        if self.sec_type == SectionTypes.SINGLE_BOARD:
             shape_fn = rectangle
         else:
             raise NotImplementedError(f'section type: {self.sec_type} has no shape function')
@@ -114,9 +137,24 @@ class BlockSection():
             o.solve_shape()
         return o
 
+    @classmethod
+    def from_library(cls, name: str, library: pd.DataFrame | None = None ):
+        """Creates a TimberSection object from a material library (DataFrame).
 
+        Args:
+            name: The name of the timber material to lookup in the library (in 'name' column)
+            library (pd.DataFrame, optional): The DataFrame containing the library of timber materials.
+                If not provided, the default library `MATERIAL_LIBRARY` is used.
 
-TimberSection = BlockSection # | ISection
+        Returns:
+            TimberMaterial: The timber material object.
+        """
+        if library is None:
+            library = import_section_library()
+        section = library.loc[library['name'] == name]
+        sec_dict = section.to_dict(orient='records')[0]
+        return cls.from_dict(**sec_dict)
+        
 
 # @dataclass(kw_only = True)
 # class StudSection(RectSection):

@@ -7,10 +7,10 @@ Created on Mon Aug 16 15:19:49 2021
 
 #Referenced documents: AS 1720.3:2016 and AS1720.1:2010
 
-#Method Definitions
-def timber_types():
-    t = ['Seasoned_timber','Unseasoned_timber']
-    return t
+# #Method Definitions
+# def timber_types():
+#     t = ['Seasoned_timber','Unseasoned_timber']
+#     return t
 
 # def timber_grades():
 #     g = ['F5', 'F7', 'F8', 'MGP10', 'MGP12', 'MGP15']

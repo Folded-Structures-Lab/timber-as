@@ -3,19 +3,37 @@ This module provides the `TimberMaterial` class, a data model for representing t
 
 The `TimberMaterial` class supports the creation of timber material objects with attributes like name, grade, whether it's seasoned, and various material properties. It also includes methods to retrieve the capacity factor for a given application category, update material properties based on specific rules (e.g. deep sections), and create a `TimberMaterial` instance from a dictionary or a pandas DataFrame material library.
 
-An in-memory material library (`MATERIAL_LIBRARY`), loaded from a CSV file, is also provided for easy and quick lookup of common timber materials.
+The function `import_material_library` reads a material library from a CSV file located at 'timberas.data/material_library.csv' and returns the data as a pandas DataFrame.
 
 Classes:
     TimberMaterial: Represents a timber material based on AS1720.
 
-Variables:
-    MATERIAL_LIBRARY (pd.DataFrame): In-memory material library loaded from a CSV file.
+Functions:
+    import_material_library(): Returns a DataFrame containing the contents of the material library CSV file.
 """
 
 import pandas as pd
 from importlib.resources import files
 from dataclasses import dataclass, field
 #from timberas.utils import ApplicationCategory
+
+
+
+
+def import_material_library() -> pd.DataFrame:
+    """
+    Imports a material library from a CSV file.
+
+    The CSV file should be located at 'timberas.data/material_library.csv'.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the contents of the material library CSV file.
+
+    Raises:
+        FileNotFoundError: If the CSV file does not exist.
+    """
+    return pd.read_csv(files('timberas.data').joinpath('material_library.csv'))
+
 
 
 @dataclass(kw_only = True)
@@ -109,7 +127,7 @@ class TimberMaterial():
             TimberMaterial: The timber material object.
         """
         if library is None:
-            library = MATERIAL_LIBRARY
+            library = import_material_library()
         material = library.loc[library['name'] == name]
         mat_dict = material.to_dict(orient='records')[0]
         return cls.from_dict(**mat_dict)
@@ -117,13 +135,9 @@ class TimberMaterial():
 
 
 
-MATERIAL_LIBRARY= pd.read_csv(files('timberas.data').joinpath('material_library.csv'))
-'''docstring for MATERIAL LIBRARY'''
-
-
 
 def main():   
-    print(MATERIAL_LIBRARY)
+    MATERIAL_LIBRARY = import_material_library()
 
     MGP10 = TimberMaterial.from_library('MGP10')
     MGP10 = TimberMaterial.from_library('MGP10', MATERIAL_LIBRARY)
