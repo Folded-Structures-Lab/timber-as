@@ -15,9 +15,7 @@ Functions:
 import pandas as pd
 from importlib.resources import files
 from dataclasses import dataclass, field
-#from timberas.utils import ApplicationCategory
-
-
+# from timberas.utils import ApplicationCategory
 
 
 def import_material_library() -> pd.DataFrame:
@@ -35,8 +33,7 @@ def import_material_library() -> pd.DataFrame:
     return pd.read_csv(files('timberas.data').joinpath('material_library.csv'))
 
 
-
-@dataclass(kw_only = True)
+@dataclass(kw_only=True)
 class TimberMaterial():
     """A class to represent a timber material as defined in AS1720.
 
@@ -58,7 +55,7 @@ class TimberMaterial():
     """
     name: str = ''
     grade: str = ''
-    seasoned: bool = True 
+    seasoned: bool = True
     grade_type: str = ''
     f_b: float = 0
     f_t: float = 0
@@ -66,12 +63,12 @@ class TimberMaterial():
     f_c: float = 0
     E: float = 0
     G: float = 0
-    density: float = 0 
+    density: float = 0
     phi_1: float = field(default=0, repr=False)
     phi_2: float = field(default=0, repr=False)
     phi_3: float = field(default=0, repr=False)
 
-    def phi(self, application_cat: int):
+    def phi(self, application_cat: int) -> float:
         """Returns the appropriate capacity factor for the given application category.
 
         Args:
@@ -83,22 +80,52 @@ class TimberMaterial():
         Raises:
             ValueError: If the application category is not recognized.
         """
+        p: float = 0
         match application_cat:
-            case 1: return self.phi_1
-            case 2: return self.phi_2
-            case 3: return self.phi_3
+            case 1: p = self.phi_1
+            case 2: p = self.phi_2
+            case 3: p = self.phi_3
             case _: raise ValueError(f'Application Category {application_cat} not recognised.')
-                 
-    def update_f_t(self, d: float):
+        return p
+
+    def update_from_section_size(self, d: float, b: float | None = None) -> None:
         """Updates the f_t property for large Glulam sections according to AS1720.1 Table 7.1 note.
 
         Args:
             d: The dimension of the timber section.
         """
-        
-        if self.grade_type == 'GL' and d > 150:
+        if self.grade_type == "MGP" and d > 140:
+            match d:
+                case 190 | 240 | 290: new_mat = f'{self.name} {d}mm depth'
+                case _: raise ValueError(f'Section depth {d} > 140mm - please interpolate material properties for MGP section (table H3.1, Note 4).')
+            print(f'Material changed from {self.name} to {new_mat}')
+            new_mat = self.from_library(new_mat)
+            self.name = new_mat.name
+            self.f_b = new_mat.f_b
+            self.f_t = new_mat.f_t
+            self.f_c = new_mat.f_c
+            self.f_s = new_mat.f_s
+        elif self.grade_type == 'F':
+            if d > 150:
+                # Table H.2 Note 2
+                original_f_t = self.f_t
+                self.f_t = round(self.f_t * (150/d)**0.167, 3)
+                print(
+                    f'Tensile strength f_t changed from {original_f_t} to {self.f_t} due to section size, Table H.2 Note 2')
+            if d > 300:
+                # Table H.2 Note 1
+                original_f_b = self.f_b
+                self.f_b = round(self.f_b * (300/d)**0.167, 3)
+                print(
+                    f'Bending strength f_b changed from {original_f_b} to {self.f_b} due to section size, Table H.2 Note 1')
+
+        elif self.grade_type == 'GL' and d > 150:
+            # Table 7.1 Note
+            original_f_t = self.f_t
             self.f_t = round(self.f_t * (150/d)**0.167, 3)
-        
+            print(
+                f'Tensile strength f_t changed from {original_f_t} to {self.f_t} due to section size, Table 7.1 Note')
+
     @classmethod
     def from_dict(cls, **kwargs):
         """Creates a TimberMaterial object from a dictionary.
@@ -112,10 +139,10 @@ class TimberMaterial():
         o = cls()
         for k, v in kwargs.items():
             setattr(o, k, v)
-        return o        
-         
+        return o
+
     @classmethod
-    def from_library(cls, name: str, library: pd.DataFrame | None = None ):
+    def from_library(cls, name: str, library: pd.DataFrame | None = None):
         """Creates a TimberMaterial object from a material library (DataFrame).
 
         Args:
@@ -131,17 +158,15 @@ class TimberMaterial():
         material = library.loc[library['name'] == name]
         mat_dict = material.to_dict(orient='records')[0]
         return cls.from_dict(**mat_dict)
-        
 
 
-
-
-def main():   
+def main():
     MATERIAL_LIBRARY = import_material_library()
 
     MGP10 = TimberMaterial.from_library('MGP10')
     MGP10 = TimberMaterial.from_library('MGP10', MATERIAL_LIBRARY)
     print(MGP10)
-    
+
+
 if __name__ == "__main__":
     main()

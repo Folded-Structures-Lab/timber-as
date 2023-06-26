@@ -1,2 +1,6 @@
 ﻿name,sec_type,n,d,b, availability
 240x45,single_board,1,240,45,common
+250x50,single_board,1,250,50,common
+330x65,single_board,1,330,65,common
+90x35,single_board,1,90,35,common
+190x35,single_board,1,190,35,common
