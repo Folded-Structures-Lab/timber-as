@@ -5,29 +5,29 @@ Created on Mon Aug 16 15:19:49 2021
 @author: uqjgatta
 """
 from __future__ import annotations
+import math
+from enum import IntEnum, Enum
 from dataclasses import dataclass, field
 from timberas.material import TimberMaterial
 from timberas.geometry import TimberSection
 
-from timberas.AS1684_dicts import g13_lookup
-import math
-from enum import IntEnum
 
-
-@dataclass
-class EffectiveLengthFactor():
-    FixedFixed: float = 0.7
-    FixedPinned: float = 0.85
-    PinnedPinned: float = 1.0
-    FixedSway: float = 1.5
-    FixedFree: float = 2.0
-    FlatEndRestraint: float = 0.7
-    BoltedEndRestraint: float = 0.75
-    FramingStuds: float = 0.9
+class EffectiveLengthFactor(float,Enum):
+    '''Dataclass containing values for effective length factor g_13 based on end restraint.
+    Table 3.2, AS1720.1:2010.'''
+    FIXED_FIXED: float = 0.7
+    FIXED_PINNED: float = 0.85
+    PINNED_PINNED: float = 1.0
+    FIXED_SWAY: float = 1.5
+    FIXED_FREE: float = 2.0
+    FLAT_END_RESTRAINT: float = 0.7
+    BOLTED_END_RESTRAINT: float = 0.75
+    FRAMING_STUDS: float = 0.9
 
 
 class ApplicationCategory(IntEnum):
-    '''Table 2.1, AS1720.1:2010'''
+    """Table 2.1, AS1720.1:2010"""
+
     SECONDARY_MEMBER = 1
     PRIMARY_MEMBER = 2
     PRIMARY_MEMBER_POST_DISASTER = 3
@@ -35,16 +35,22 @@ class ApplicationCategory(IntEnum):
     GREATER_THAN_25_SQM = 2
 
 
-def locations_latitudes():
-    '''Clause 2.4.3, AS1720.1:2010'''
-    l = ['Queensland_&_North_of_25˚S', 'Queensland_&_South_of_25˚S', 'Other_Regions_of_Australia_&_North_of_16˚S',
-         'Other_Regions_of_Australia_&_North_of_16˚S',
-         'Other_Regions_of_Australia_&_South_of_16˚S']
-    return l
+# def locations_latitudes():
+#     """Clause 2.4.3, AS1720.1:2010"""
+#     l = [
+#         "Queensland_&_North_of_25˚S",
+#         "Queensland_&_South_of_25˚S",
+#         "Other_Regions_of_Australia_&_North_of_16˚S",
+#         "Other_Regions_of_Australia_&_North_of_16˚S",
+#         "Other_Regions_of_Australia_&_South_of_16˚S",
+#     ]
+#     return l
 
 
 @dataclass
-class TimberMember():
+class TimberMember:
+    '''TODO'''
+
     sec: TimberSection = field(repr=False)
     mat: TimberMaterial = field(repr=False)
     sec_name: str = field(init=False)
@@ -60,7 +66,7 @@ class TimberMember():
     L: float = 1  # length
     L_ay: float = 0
     g_13: float = 1
-    k1: float = 1.0
+    k_1: float = 1.0
     r: float = 0.25  # ratio of temporary to total design action effect
 
     N_dt: float = field(init=False)  # kN
@@ -76,88 +82,130 @@ class TimberMember():
         self.solve_capacities()
 
     def solve_capacities(self):
+        '''Calculate tension, compression, and bending design capacities.'''
         self.N_dt = self._N_dt()
         self.N_cx = self._N_cx()
         self.N_cy = self._N_cy()
         self.N_dc = self._N_dc()
         self.M_d = self._M_d()
 
+    def update_k_1(self, k_1: float) -> TimberSection:
+        '''Change k_1 factor and recalculate section capacities.'''
+        self.k_1 = k_1
+        self.solve_capacities()
+        return self
+
     @property
     def phi(self) -> float:
-        '''Table 2.1, AS1720.1:2010'''
+        """Table 2.1, AS1720.1:2010"""
         phi: float = self.mat.phi(self.application_cat)
         return phi
 
     def _N_cx(self) -> float:
-        '''Clause 3.3.1.1, AS1720.1:2010'''
-        return self.phi * self.k1 * self.k4 * self.k6 * self.k12_x * self.mat.f_c * self.sec.A_c / 1000
+        """Clause 3.3.1.1, AS1720.1:2010"""
+        return (
+            self.phi
+            * self.k_1
+            * self.k_4
+            * self.k_6
+            * self.k_12_x
+            * self.mat.f_c
+            * self.sec.A_c
+            / 1000
+        )
 
     def _N_cy(self) -> float:
-        '''Clause 3.3.1.1, AS1720.1:2010'''
-        return self.phi * self.k1 * self.k4 * self.k6 * self.k12_y * self.mat.f_c * self.sec.A_c / 1000
+        """Clause 3.3.1.1, AS1720.1:2010"""
+        return (
+            self.phi
+            * self.k_1
+            * self.k_4
+            * self.k_6
+            * self.k_12_y
+            * self.mat.f_c
+            * self.sec.A_c
+            / 1000
+        )
 
     def _N_dc(self) -> float:
-        '''Clause 3.3.1.1, AS1720.1:2010'''
+        """Clause 3.3.1.1, AS1720.1:2010"""
         return min(self._N_cx(), self._N_cy())
 
     def _N_dt(self) -> float:
-        '''Clause 3.4.1, AS1720.1:2010'''
-        return self.phi * self.k1 * self.k4 * self.k6 * self.mat.f_t * self.sec.A_t / 1000
+        """Clause 3.4.1, AS1720.1:2010"""
+        return (
+            self.phi * self.k_1 * self.k_4 * self.k_6 * self.mat.f_t * self.sec.A_t / 1000
+        )
 
     def _M_d(self) -> float:
-        '''Clause 3.2.1.1, AS1720.1:2010'''
-        return self.phi * self.k1 * self.k4 * self.k6 * self.k9 * self.k12_bend * self.mat.f_b * self.sec.Z_x / 1E6
-
-    # @property
-    # def g_13(self) -> float:
-    #     '''Clause 3.2.2.4(d)(ii), AS1720.3:2016'''
-    #     return g13_lookup(self.L)
-
-    @property
-    def S3(self) -> float:
-        '''Clause 3.3.2.2(a), AS1720.1:2010'''
-        return self.g_13 * self.L / self.sec.d
-
-    @property
-    def S4(self) -> float:
-        '''Clause 3.3.2.2(b), AS1720.1:2010'''
-        # NOTE: b_i or b? valid for other cases?
-        S4_1 = self.L_ay / self.sec.b
-        S4_2 = self.g_13 * self.L / (self.sec.b)
-        return min(S4_1, S4_2)
+        """Clause 3.2.1.1, AS1720.1:2010"""
+        return (
+            self.phi
+            * self.k_1
+            * self.k_4
+            * self.k_6
+            * self.k_9
+            * self.k_12_bend
+            * self.mat.f_b
+            * self.sec.Z_x
+            / 1e6
+        )
 
     @property
     def S1(self) -> float:
+        '''Slenderness coefficient for lateral buckling under bending, major axis. Clause 3.2.3, 
+        AS1720.1:2010. Not implemented in TimberMember parent class, added in child classes.'''
         raise NotImplementedError
 
     @property
+    def S2(self) -> float:
+        '''Slenderness coefficient for lateral buckling under bending, minor axis. 
+        Clause 3.2.3(c), AS1720.1:2010.'''
+        return 0
+
+    @property
+    def S3(self) -> float:
+        '''Slenderness coefficient for lateral buckling under compression, major axis.
+        Clause 3.3.2, AS1720.1:2010. Not implemented in TimberMember parent class, added in 
+        child classes.'''
+        raise NotImplementedError
+
+    @property
+    def S4(self) -> float:
+        """Clause 3.3.2.2(b), AS1720.1:2010"""
+        # NOTE: b_i or b? valid for other cases?
+        calc_1 = self.L_ay / self.sec.b
+        calc_2 = self.g_13 * self.L / (self.sec.b)
+        return min(calc_1, calc_2)
+
+    @property
     def rho_c(self) -> float:
-        '''Section E2, AS1720.1:2010'''
+        """Section E2, AS1720.1:2010"""
         # NOTE -> move to child class when other materials (LVL) added
         r = self.r if self.r > 0 else 0.25
         if self.mat.seasoned:
-            rho = 11.39 * (self.mat.E / self.mat.f_c)**(-0.408)*r**(-0.074)
+            rho = 11.39 * (self.mat.E / self.mat.f_c) ** (-0.408) * r ** (-0.074)
         else:
-            rho = 9.29 * (self.mat.E / self.mat.f_c)**(-0.367)*r**(-0.146)
+            rho = 9.29 * (self.mat.E / self.mat.f_c) ** (-0.367) * r ** (-0.146)
         return rho
 
     @property
     def rho_b(self) -> float:
-        '''Section E2, AS1720.1:2010'''
+        """Section E2, AS1720.1:2010"""
         r = self.r if self.r > 0 else 0.25
         if self.mat.seasoned:
-            rho = 14.71 * (self.mat.E / self.mat.f_b)**(-0.480)*r**(-0.061)
+            rho = 14.71 * (self.mat.E / self.mat.f_b) ** (-0.480) * r ** (-0.061)
         else:
-            rho = 11.63 * (self.mat.E / self.mat.f_b)**(-0.435)*r**(-0.110)
+            rho = 11.63 * (self.mat.E / self.mat.f_b) ** (-0.435) * r ** (-0.110)
         return rho
 
     @property
-    def k4(self) -> float:
-        '''Table 2.5, AS1720.1:2010'''
+    def k_4(self) -> float:
+        """Table 2.5, AS1720.1:2010"""
         if self.mat.seasoned:
             return 1.0
         else:
-            # NOTE - k4 between 75 and 100mm not defined?
+            # NOTE - k_4 between 75 and 100mm not defined?
             least_dim = min(self.sec.b, self.sec.d)
             if least_dim <= 38:
                 return 1.15
@@ -169,123 +217,142 @@ class TimberMember():
                 return 1.00
             else:
                 raise NotImplementedError(
-                    f'{self.sec.d} not defined for k4 partial seasoning factor')
+                    f"{self.sec.d} not defined for k_4 partial seasoning factor"
+                )
 
     @property
-    def k6(self) -> float:
-        '''Çlause 2.4.3, AS1720.1:2010'''
-        return self.k6_lookup(self.mat.seasoned, self.high_temp_latitude)
+    def k_6(self) -> float:
+        """Çlause 2.4.3, AS1720.1:2010"""
+        return self.k_6_lookup(self.mat.seasoned, self.high_temp_latitude)
 
     @property
-    def k9(self) -> float:
+    def k_9(self) -> float:
+        '''Modification factor for strength sharing. Clause 2.4.5.3, AS1720.1:2010. 
+        Not Implemented in TimberMember parent class, added in child classes.'''
         raise NotImplementedError
-        # '''Clause 2.4.5.3, AS1720.1:2010'''
-        # return max(self.g_31 + (self.g_32 - self.g_31) * (1 - (2 * self.member_spacing/self.L)), 1)
 
     @property
-    def k12(self) -> float:
-        return min(self.k12_x, self.k12_y)
+    def k_12_c(self) -> float:
+        """Modification factor for stability, to allow for slenderness effects on compression 
+        strength. Minimum of k_12_x and k_12_y. Clause 3.3.3, AS1720.1:2010."""
+        return min(self.k_12_x, self.k_12_y)
 
     @property
-    def k12_x(self) -> float:
-        '''Clause 3.3.3, AS1720.1:2010'''
-        return self.k12_lookup_com(self.rho_c, self.S3)
+    def k_12_x(self) -> float:
+        """Modification factor for stability, to allow for slenderness effects on compression 
+        strength (x-axis). Clause 3.3.3, AS1720.1:2010."""
+        return self.calc_k12_compression(self.rho_c, self.S3)
 
     @property
-    def k12_y(self) -> float:
-        '''Clause 3.3.3, AS1720.1:2010'''
-        return self.k12_lookup_com(self.rho_c, self.S4)
+    def k_12_y(self) -> float:
+        """Modification factor for stability, to allow for slenderness effects on compression 
+        strength (y-axis). Clause 3.3.3, AS1720.1:2010."""
+        return self.calc_k12_compression(self.rho_c, self.S4)
 
     @property
-    def k12_bend(self) -> float:
-        '''Clause 3.2.4, AS1720.1:2010'''
-        return self.k12_lookup_bend(self.rho_b, self.S1)
+    def k_12_bend(self) -> float:
+        """Modification factor for stability, to allow for slenderness effects on bending 
+        strength. Clause 3.2.4, AS1720.1:2010."""
+        return self.calc_k12_bending(self.rho_b, self.S1)
 
-    def update_k1(self, k1: float) -> TimberSection:
-        self.k1 = k1
-        self.solve_capacities()
-        return self
 
-    def k6_lookup(self, seasoned: bool, high_temp_latitude: float) -> float:
-        '''Clause 2.4.3, AS1720.1:2010'''
-        # modification factor for strength for the effect of temperature
-        # high temp latitude:
-        # "Queensland_&_North_of_25˚S":0.9,
-        # "Other_Regions_of_Australia_&_North_of_16˚S":0.9,
-        # other regions:
-        # "Queensland_&_South_of_25˚S":1.0,
-        # "Other_Regions_of_Australia_&_South_of_16˚S":1.0
-
+    def k_6_lookup(self, seasoned: bool, high_temp_latitude: float) -> float:
+        """Modification factor for strength for the effect of temperature. 
+        Clause 2.4.3, AS1720.1:2010."""
         if seasoned and high_temp_latitude:
-            return 0.9
+            k_6 = 0.9
         else:
-            return 1.0
+            k_6 = 1.0
+        return k_6
 
-    def k12_lookup_com(self, rho_c: float, S3: float) -> float:
-        '''Clause 3.3.3, AS 1720.1:2010'''
-        pcS = rho_c * S3
-        if pcS <= 10:
+    def calc_k12_compression(self, rho_c: float, S3: float) -> float:
+        """Calculate stability factor k12 for compression. Clause 3.3.3, AS 1720.1:2010."""
+        rho_times_s = rho_c * S3
+        if rho_times_s <= 10:
             return 1.0
-        if pcS >= 10 and pcS <= 20:
-            return 1.5-(0.05*pcS)
-        if pcS >= 20:
-            return 200/((pcS)**2)
+        if rho_times_s >= 10 and rho_times_s <= 20:
+            return 1.5 - (0.05 * rho_times_s)
+        if rho_times_s >= 20:
+            return 200 / ((rho_times_s) ** 2)
 
-    def k12_lookup_bend(self, rho_b: float, S1: float) -> float:
-        '''Clause 3.2.4, AS1720.1:2010'''
-        pbS = rho_b * S1
-        if pbS <= 10:
+    def calc_k12_bending(self, rho_b: float, S1: float) -> float:
+        """Calculate stability factor k12 for bending. Clause 3.2.4, AS1720.1:2010"""
+        rho_times_s = rho_b * S1
+        if rho_times_s <= 10:
             return 1.0
-        if pbS >= 10 and pbS <= 20:
-            return 1.5-(0.05*pbS)
-        if pbS >= 20:
-            return 200/((pbS)**2)
+        if rho_times_s >= 10 and rho_times_s <= 20:
+            return 1.5 - (0.05 * rho_times_s)
+        if rho_times_s >= 20:
+            return 200 / ((rho_times_s) ** 2)
 
 
 class BoardMember(TimberMember):
-    ...
+    '''TODO'''
+
 
     @property
     def S1(self) -> float:
-        '''Clause 3.2.3.2(b), AS1720.1:2010'''
+        """Clause 3.2.3.2(b), AS1720.1:2010"""
         # Continuous restraint, tension edge
         # NOTE -> self.b for single and multiboard?
-        return (1.5 * (self.sec.d/self.sec.b))/((((math.pi * self.sec.d)/600)**2+.4)**0.5)
+        return (1.5 * (self.sec.d / self.sec.b)) / (
+            (((math.pi * self.sec.d) / 600) ** 2 + 0.4) ** 0.5
+        )
 
     @property
-    def k9(self) -> float:
-        '''Clause 2.4.5.3, AS1720.1:2010'''
-        return max(self.g_31 + (self.g_32 - self.g_31) * (1 - (2 * self.member_spacing/self.L)), 1)
+    def S3(self) -> float:
+        '''Slenderness coefficient for buckling about major axis in rectangular sections.
+        Clause 3.3.2.2(a), AS1720.1:2010.'''
+        return self.g_13 * self.L / self.sec.d
+
+    @property
+    def k_9(self) -> float:
+        """Clause 2.4.5.3, AS1720.1:2010"""
+        return max(
+            self.g_31
+            + (self.g_32 - self.g_31) * (1 - (2 * self.member_spacing / self.L)),
+            1,
+        )
 
     # for n in n_all:
 
     @property
     def g_31(self) -> float:
-        '''Table 2.7, AS1720.1:2010'''
+        """Table 2.7, AS1720.1:2010"""
         return self.g3_lookup(self.n_com)
 
     @property
     def g_32(self) -> float:
-        '''Table 2.7, AS1720.1:2010'''
+        """Table 2.7, AS1720.1:2010"""
         g32 = self.g3_lookup(self.n_com * self.n_mem)
         return g32
         # return self.g32_lookup(self.n_com * self.n_mem)
 
     @staticmethod
-    def g3_lookup(n) -> float:
-        '''Table 2.7, AS1720.1:2010'''
+    def g3_lookup(n: int) -> float:
+        """Table 2.7, AS1720.1:2010"""
         match n:
-            case 1: v = 1
-            case 2: v = 1.14
-            case 3: v = 1.2
-            case 4: v = 1.24
-            case 5: v = 1.26
-            case 6: v = 1.28
-            case 7: v = 1.3
-            case 8: v = 1.31
-            case 9: v = 1.32
-            case _: v = 1.33
-        return v
+            case 1:
+                val = 1
+            case 2:
+                val = 1.14
+            case 3:
+                val = 1.2
+            case 4:
+                val = 1.24
+            case 5:
+                val = 1.26
+            case 6:
+                val = 1.28
+            case 7:
+                val = 1.3
+            case 8:
+                val = 1.31
+            case 9:
+                val = 1.32
+            case _:
+                val = 1.33
+        return val
 
     # def g32_lookup(self, n_cm: int) -> float:
     #     '''Table 2.7, AS1720.1:2010'''
@@ -295,9 +362,9 @@ class BoardMember(TimberMember):
 
 
 class GlulamMember(BoardMember):
-    ...
+    '''TODO'''
 
     @property
-    def k9(self) -> float:
-        '''TODO'''
+    def k_9(self) -> float:
+        """TODO"""
         return 1.0

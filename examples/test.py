@@ -1,5 +1,3 @@
-
-
 # import material
 from timberas.member import ApplicationCategory
 from timberas.member import EffectiveLengthFactor
@@ -10,17 +8,22 @@ from timberas.material import import_material_library, TimberMaterial
 
 # import material from the default library
 MATERIAL_LIBRARY = import_material_library()
-MGP12 = TimberMaterial.from_library('MGP12', MATERIAL_LIBRARY)
+MGP12 = TimberMaterial.from_library("MGP12", MATERIAL_LIBRARY)
 print(MGP12)
 
 # default library is also used if none is provided otherwise
-F8 = TimberMaterial.from_library('F8 Unseasoned Softwood')
+F8 = TimberMaterial.from_library("F8 Unseasoned Softwood")
 print(F8)
 
 
 # make stud
-stud_dict = {'name': '1/90x45',
-             'sec_type': SectionTypes.SINGLE_BOARD, 'n': 1, 'b': 45, 'd': 90}
+stud_dict = {
+    "name": "1/90x45",
+    "sec_type": SectionTypes.SINGLE_BOARD,
+    "n": 1,
+    "b": 45,
+    "d": 90,
+}
 stud = TimberSection(**stud_dict)
 print(stud)
 
@@ -28,104 +31,125 @@ print(stud)
 # g_13 = EffectiveLengthFactor.PinnedPinned
 
 # EXAMPLE 2.11, Capacity Factor, pg ...
-MGP10 = TimberMaterial.from_library('MGP10')
+MGP10 = TimberMaterial.from_library("MGP10")
 tm = BoardMember(sec=stud, mat=MGP10, application_cat=1)
-print(f'Example 2.11 Solution MGP10 Frames {tm.phi}=0.9')
 
-F17_Hardwood = TimberMaterial.from_library('F17 Seasoned Hardwood')
+print("\n EG2.11 Capacity Factors")
+print(f"Example 2.11 Solution MGP10 Frames {tm.phi}=0.9")
+
+F17_Hardwood = TimberMaterial.from_library("F17 Seasoned Hardwood")
 tm = BoardMember(sec=stud, mat=F17_Hardwood, application_cat=2)
-print(f'Example 2.11 Solution Hardwood Trusses {tm.phi}=0.85')
+
+print(f"Example 2.11 Solution Hardwood Trusses {tm.phi}=0.85")
 
 TM = TimberMaterial
 TS = TimberSection
 
 # EXAMPLE 3.1 Design Characteristic Tensile Strength, pg 177
-sec = TS.from_library('240x45')
-mat = TM.from_library('MGP12')
+sec = TS.from_library("240x45")
+mat = TM.from_library("MGP12")
 mat.update_from_section_size(sec.d)
-print(f'EG3.1(a) 240 x 45 MGP12 f_t = {mat.f_t} (ANS: 11 MPa)')
+
+print("\n EG3.1 Design Characteristic Tensile Strength")
+print(f"EG3.1(a) 240 x 45 MGP12 f_t = {mat.f_t} (ANS: 11 MPa)")
 
 sec = TS(d=250, b=50)
-mat = TM.from_library('F14 Unseasoned Hardwood')
+mat = TM.from_library("F14 Unseasoned Hardwood")
 mat.update_from_section_size(sec.d)
-print(
-    f'EG3.1(b) 250 x 50 F14 Unseasoned Hardwood f_t = {mat.f_t} (ANS: 20.2 MPa)')
+
+print(f"EG3.1(b) 250 x 50 F14 Unseasoned Hardwood f_t = {mat.f_t} (ANS: 20.2 MPa)")
 
 sec = TS(d=330, b=65)
-mat = TM.from_library('GL12')
+mat = TM.from_library("GL12")
 mat.update_from_section_size(sec.d)
-print(f'EG3.1(c) 330 x 65 GL12 f_t = {mat.f_t} (ANS: 9.6 MPa)')
+print(f"EG3.1(c) 330 x 65 GL12 f_t = {mat.f_t} (ANS: 9.6 MPa)")
 
-sec = TS.from_library('90x35')
-mat = TM.from_library('MGP10')
+sec = TS.from_library("90x35")
+mat = TM.from_library("MGP10")
 mat.update_from_section_size(sec.d)
-print(f'EG3.1(d) 90 x 35 MGP10 f_t = {mat.f_t} (ANS: 7.7 MPa)')
+print(f"EG3.1(d) 90 x 35 MGP10 f_t = {mat.f_t} (ANS: 7.7 MPa)")
 
 # EXAMPLE 3.3 Tensile Capacity
-sec = TS.from_library('190x35')
+sec = TS.from_library("190x35")
 sec.A_t = sec.A_g - 2 * 22 * sec.b  # remove bolt holes
-mat = TM.from_library('MGP10')
+mat = TM.from_library("MGP10")
 mat.update_from_section_size(sec.d)
-member = BoardMember(sec=sec, mat=mat, application_cat=2,
-                     high_temp_latitude=False)
+member = BoardMember(sec=sec, mat=mat, application_cat=2, high_temp_latitude=False)
+
+print("\n EG3.3 Tensile Capacity")
 print(
-    f'EG3.3(a) Design tensile capacity for wind action case (k_1 = {member.k1}), N_dt = {member.N_dt} (ANS: 25.4 kN)')
-member.update_k1(0.57)
+    f"EG3.3(a) Design tensile capacity for wind action case\
+        (k_1 = {member.k_1}), N_dt = {member.N_dt} (ANS: 25.4 kN)"
+)
+
+member.update_k_1(0.57)
 print(
-    f'EG3.3(b) Design tensile capacity for wind action case (k_1 = {member.k1}), N_dt = {member.N_dt} (ANS: 14.5 kN)')
+    f"EG3.3(b) Design tensile capacity for wind action case\
+        (k_1 = {member.k_1}), N_dt = {member.N_dt} (ANS: 14.5 kN)"
+)
 
 # EXAMPLE 4.1 Compression Capacity
-g_13 = EffectiveLengthFactor.PinnedPinned
-member_dict = {'sec': sec, 'mat': mat, 'application_cat': 2,
-               'r': 1.0, 'g_13': g_13, 'L': 2800, 'L_ay': 2800}
+g_13 = EffectiveLengthFactor.PINNED_PINNED
+member_dict = {
+    "sec": sec,
+    "mat": mat,
+    "application_cat": 2,
+    "r": 1.0,
+    "g_13": g_13,
+    "L": 2800,
+    "L_ay": 2800,
+}
 member = BoardMember(**member_dict)
-print(f'EG4.1(a): k_1 = {member.k1}, r={member.r}, g_13={member.g_13}')
-print(
-    f'EG4.1(a) Slenderness factor major axis buckling  S3 = {member.S3} (ANS: 14.7)')
-print(
-    f'EG4.1(a) Slenderness factor minor axis buckling S4 = {member.S4} (ANS: 80)')
-print(
-    f'EG4.1(a) Stability factor k12 = {member.k12} (ANS: 0.042)')
-print(
-    f'EG4.1(a) Design compression capacity N_dc = {member.N_dc} (ANS: 3.54 kN)')
+
+print("\n EG4.1 Compression Capacity")
+print(f"EG4.1(a): k_1 = {member.k_1}, r={member.r}, g_13={member.g_13}")
+print(f"EG4.1(a) Slenderness factor major axis buckling  S3 = {member.S3} (ANS: 14.7)")
+print(f"EG4.1(a) Slenderness factor minor axis buckling S4 = {member.S4} (ANS: 80)")
+print(f"EG4.1(a) Stability factor k12 = {member.k_12_c} (ANS: 0.042)")
+print(f"EG4.1(a) Design compression capacity N_dc = {member.N_dc} (ANS: 3.54 kN)")
 
 
-member_dict['g_13'] = EffectiveLengthFactor.BoltedEndRestraint
+member_dict["g_13"] = EffectiveLengthFactor.BOLTED_END_RESTRAINT
 member = BoardMember(**member_dict)
-print(f'EG4.1(b): k_1 = {member.k1}, r={member.r}, g_13={member.g_13}')
-print(
-    f'EG4.1(a) Slenderness factor major axis buckling  S3 = {member.S3} (ANS: 11.1)')
+
+print(f"EG4.1(b): k_1 = {member.k_1}, r={member.r}, g_13={member.g_13}")
+print(f"EG4.1(a) Slenderness factor major axis buckling  S3 = {member.S3} (ANS: 11.1)")
 
 
 # Example 4.3 Stud Wall
-mat = TM.from_library('F7 Unseasoned Softwood')
+mat = TM.from_library("F7 Unseasoned Softwood")
 member_dict = {
-    'sec': TS(d=147, b=47, name='147x47', sec_type=SectionTypes.SINGLE_BOARD),
-    'mat': mat,
-    'application_cat': ApplicationCategory.SECONDARY_MEMBER,
-    'high_temp_latitude': False,
-    'k1': 0.57,
-    'r': 0,
-    'g_13': EffectiveLengthFactor.FramingStuds,
-    'L': 3300,
-    'L_ay': 1650}
+    "sec": TS(d=147, b=47, name="147x47", sec_type=SectionTypes.SINGLE_BOARD),
+    "mat": mat,
+    "application_cat": ApplicationCategory.SECONDARY_MEMBER,
+    "high_temp_latitude": False,
+    "k_1": 0.57,
+    "r": 0,
+    "g_13": EffectiveLengthFactor.FRAMING_STUDS,
+    "L": 3300,
+    "L_ay": 1650,
+}
 member = BoardMember(**member_dict)
-mat
-print('\n EG4.3 Timber Stud Wall Design')
-print(
-    f'EG4.3(a) Slenderness factor major axis buckling  S3 = {member.S3} (ANS: 20.1)')
-print(
-    f'EG4.3(a) Slenderness factor minor axis buckling S4 = {member.S4} (ANS: 35.1)')
-print(
-    f'EG4.3(a) Stability factor k12 = {member.k12} (ANS: 0.139)')
-print(
-    f'EG4.3(a) Design compression capacity N_dc = {member.N_dc} (ANS: 7.05 kN)')
+
+print("\n EG4.3 Timber Stud Wall Design")
+print(f"EG4.3(a) Slenderness factor major axis buckling  S3 = {member.S3} (ANS: 20.1)")
+print(f"EG4.3(a) Slenderness factor minor axis buckling S4 = {member.S4} (ANS: 35.1)")
+print(f"EG4.3(a) Stability factor k12 = {member.k_12_c} (ANS: 0.139)")
+print(f"EG4.3(a) Design compression capacity N_dc = {member.N_dc} (ANS: 7.05 kN)")
 
 # Example 4.4 Stud Wall Design Change
-print('\n EG4.4 Timber Stud Wall Modification - increase capacity from additional lateral restraint L_ay = 1100 mm')
-print(
-    f'EG4.4  Check design compression capacity for major axis bukcling N_cx = {member.N_cx} (ANS: 21.3 kN)')
-member_dict['L_ay'] = 1100
+member_dict["L_ay"] = 1100
 member = BoardMember(**member_dict)
+
 print(
-    f'EG4.4  Check design compression capacity for minor axis bukcling N_cy = {member.N_cy} (ANS: 15.9 kN)')
+    "\n EG4.4 Timber Stud Wall Modification - increase capacity from \
+      additional lateral restraint L_ay = 1100 mm"
+)
+print(
+    f"EG4.4  Check design compression capacity for major axis buckling \
+        N_cx = {member.N_cx} (ANS: 21.3 kN)"
+)
+print(
+    f"EG4.4  Check design compression capacity for minor axis bukcling \
+        N_cy = {member.N_cy} (ANS: 15.9 kN)"
+)
