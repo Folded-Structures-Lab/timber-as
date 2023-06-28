@@ -1,32 +1,46 @@
 """
-This module provides the `TimberMaterial` class, a data model for representing timber materials 
+This module provides classes and functions for creating representing timber materials 
 based on AS1720. 
 
-The `TimberMaterial` class supports the creation of timber material objects with attributes like 
-name, grade, whether it's seasoned, and various material properties. It also includes methods to 
-retrieve the capacity factor for a given application category, update material properties based 
-on specific rules (e.g. deep sections), and create a `TimberMaterial` instance from a dictionary 
-or a pandas DataFrame material library.
-
-The function `import_material_library` reads a material library from a CSV file located at 
-'timberas.data/material_library.csv' and returns the data as a pandas DataFrame.
-
 Classes:
+    GradeType: Enum class defining material grade string constants.
     TimberMaterial: Represents a timber material based on AS1720.
 
 Functions:
     import_material_library(): Returns a DataFrame containing the contents of the material 
-    library CSV file.
+    library CSV file at timberas/data/material_library.csv
 """
+
 from importlib.resources import files
 from dataclasses import dataclass, field
+from enum import Enum
 import pandas as pd
+
+
+class GradeType(str, Enum):
+    """
+    An enumeration of grade type string constants.
+
+    This Enum class is used to provide a type-safe way of representing different grade types.
+    The Enum members represent various grade types such as "F", "MGP", "GL", and "A".
+
+    Attributes:
+        F_GRADE (str): Represents the "F" grade type
+        MGP (str): Represents the "MGP" grade type
+        GLULAM (str): Represents the "GL" grade type
+        A_GRADE (str): Represents the "A" grade type
+    """
+
+    F_GRADE = "F"
+    MGP = "MGP"
+    GLULAM = "GL"
+    A_GRADE = "A"
 
 
 def import_material_library() -> pd.DataFrame:
     """Imports a material library from a CSV file.
 
-    The CSV file should be located at 'timberas.data/material_library.csv'.
+    The CSV file is located at 'timberas/data/material_library.csv'.
 
     Returns:
         pd.DataFrame: A DataFrame containing the contents of the material library CSV file.
@@ -46,13 +60,13 @@ class TimberMaterial:
         grade: The grade of the timber material
         seasoned (bool): A boolean indicating whether the timber material is seasoned.
         grade_type: The type of the timber grade, e.g F, MGP, GL.
-        f_b: Material property
-        f_t: Material property.
-        f_s: Material property.
-        f_c: Material property.
-        E: Material property.
-        G: Material property.
-        density: Material property, defaults to 0.
+        f_b: Material characteristic strength in bending.
+        f_t: Material characteristic strength in tension.
+        f_s: Material characteristic strength in shear.
+        f_c: Material characteristic strength in compression.
+        E: Material Modulus of Elasticity.
+        G: Material Modulus of Rigidity.
+        density: Material density.
         phi_1: Capacity factor for the material for application category one.
         phi_2: Capacity factor for the material for application category two.
         phi_3: Capacity factor for the material for application category three.
@@ -100,13 +114,17 @@ class TimberMaterial:
                 )
 
     def update_from_section_size(self, d: float, b: float | None = None) -> None:
-        """Updates the f_t property for large Glulam sections according to
-        AS1720.1 Table 7.1 note.
+        """Updates the f_t property for large sections, including:
+          f_t, f_b, f_c, f_s for MGP sections with d>140mm (AS1720.1 Table H3.1, Note 4);
+          f_b for F-grade sections with d > 300mm (AS1720.1 Table H2.1 Note 1);
+          f_t for F-grade sections with d > 150mm (AS1720.1 Table H.2 Note 2);
+          f_t for Glulam sections with d > 150mm  (AS1720.1 Table 7.1 Note 1).
 
         Args:
-            d: The dimension of the timber section.
+            d: The depth of the timber section.
+            b: The breadth of the timber section (required for A17 material).
         """
-        if self.grade_type == "MGP" and d > 140:
+        if self.grade_type == GradeType.MGP and d > 140:
             match d:
                 case 190 | 240 | 290:
                     new_mat = f"{self.name} {d}mm depth"
@@ -123,7 +141,7 @@ class TimberMaterial:
             self.f_c = new_mat.f_c
             self.f_s = new_mat.f_s
 
-        elif self.grade_type == "F":
+        elif self.grade_type == GradeType.F_GRADE:
             if d > 150:
                 # Table H.2 Note 2
                 original_f_t = self.f_t
@@ -140,11 +158,11 @@ class TimberMaterial:
                     f"Bending strength f_b changed from {original_f_b} to {self.f_b}"
                     "due to section size, Table H.2 Note 1"
                 )
-        elif self.grade_type == "A":
+        elif self.grade_type == GradeType.A_GRADE:
             print(f"requires {d} and {b}")
             raise NotImplementedError
 
-        elif self.grade_type == "GL" and d > 150:
+        elif self.grade_type == GradeType.GLULAM and d > 150:
             # Table 7.1 Note
             original_f_t = self.f_t
             self.f_t = round(self.f_t * (150 / d) ** 0.167, 3)
@@ -188,8 +206,7 @@ class TimberMaterial:
 
 
 def main():
-    """main function for material.py"""
-
+    """Main Script"""
     material_library = import_material_library()
     mgp10 = TimberMaterial.from_library("MGP10")
     mgp10 = TimberMaterial.from_library("MGP10", material_library)

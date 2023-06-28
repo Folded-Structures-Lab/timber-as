@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Aug 16 15:19:49 2021
-
-@author: uqjgatta
+TODO
 """
 from __future__ import annotations
 import math
@@ -13,8 +10,8 @@ from timberas.geometry import TimberSection
 
 
 class EffectiveLengthFactor(float,Enum):
-    '''Dataclass containing values for effective length factor g_13 based on end restraint.
-    Table 3.2, AS1720.1:2010.'''
+    """Dataclass containing values for effective length factor g_13 based on end restraint.
+    Table 3.2, AS1720.1:2010."""
     FIXED_FIXED: float = 0.7
     FIXED_PINNED: float = 0.85
     PINNED_PINNED: float = 1.0
@@ -49,7 +46,7 @@ class ApplicationCategory(IntEnum):
 
 @dataclass
 class TimberMember:
-    '''TODO'''
+    """TODO"""
 
     sec: TimberSection = field(repr=False)
     mat: TimberMaterial = field(repr=False)
@@ -82,7 +79,7 @@ class TimberMember:
         self.solve_capacities()
 
     def solve_capacities(self):
-        '''Calculate tension, compression, and bending design capacities.'''
+        """Calculate tension, compression, and bending design capacities."""
         self.N_dt = self._N_dt()
         self.N_cx = self._N_cx()
         self.N_cy = self._N_cy()
@@ -90,7 +87,7 @@ class TimberMember:
         self.M_d = self._M_d()
 
     def update_k_1(self, k_1: float) -> TimberSection:
-        '''Change k_1 factor and recalculate section capacities.'''
+        """Change k_1 factor and recalculate section capacities."""
         self.k_1 = k_1
         self.solve_capacities()
         return self
@@ -153,21 +150,21 @@ class TimberMember:
 
     @property
     def S1(self) -> float:
-        '''Slenderness coefficient for lateral buckling under bending, major axis. Clause 3.2.3, 
-        AS1720.1:2010. Not implemented in TimberMember parent class, added in child classes.'''
+        """Slenderness coefficient for lateral buckling under bending, major axis. Clause 3.2.3, 
+        AS1720.1:2010. Not implemented in TimberMember parent class, added in child classes."""
         raise NotImplementedError
 
     @property
     def S2(self) -> float:
-        '''Slenderness coefficient for lateral buckling under bending, minor axis. 
-        Clause 3.2.3(c), AS1720.1:2010.'''
+        """Slenderness coefficient for lateral buckling under bending, minor axis. 
+        Clause 3.2.3(c), AS1720.1:2010."""
         return 0
 
     @property
     def S3(self) -> float:
-        '''Slenderness coefficient for lateral buckling under compression, major axis.
+        """Slenderness coefficient for lateral buckling under compression, major axis.
         Clause 3.3.2, AS1720.1:2010. Not implemented in TimberMember parent class, added in 
-        child classes.'''
+        child classes."""
         raise NotImplementedError
 
     @property
@@ -227,8 +224,8 @@ class TimberMember:
 
     @property
     def k_9(self) -> float:
-        '''Modification factor for strength sharing. Clause 2.4.5.3, AS1720.1:2010. 
-        Not Implemented in TimberMember parent class, added in child classes.'''
+        """Modification factor for strength sharing. Clause 2.4.5.3, AS1720.1:2010. 
+        Not Implemented in TimberMember parent class, added in child classes."""
         raise NotImplementedError
 
     @property
@@ -287,7 +284,7 @@ class TimberMember:
 
 
 class BoardMember(TimberMember):
-    '''TODO'''
+    """TODO"""
 
 
     @property
@@ -301,8 +298,8 @@ class BoardMember(TimberMember):
 
     @property
     def S3(self) -> float:
-        '''Slenderness coefficient for buckling about major axis in rectangular sections.
-        Clause 3.3.2.2(a), AS1720.1:2010.'''
+        """Slenderness coefficient for buckling about major axis in rectangular sections.
+        Clause 3.3.2.2(a), AS1720.1:2010."""
         return self.g_13 * self.L / self.sec.d
 
     @property
@@ -355,14 +352,14 @@ class BoardMember(TimberMember):
         return val
 
     # def g32_lookup(self, n_cm: int) -> float:
-    #     '''Table 2.7, AS1720.1:2010'''
+    #     """Table 2.7, AS1720.1:2010"""
     #     # g31 = geometric factor for combined members in discrete parallel system
     #     g32 = self.g31_lookup(n_cm)
     #     return g32
 
 
 class GlulamMember(BoardMember):
-    '''TODO'''
+    """TODO"""
 
     @property
     def k_9(self) -> float:

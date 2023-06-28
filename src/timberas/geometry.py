@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Nov 18 13:37:31 2022
+"""TODO"""
 
-@author: uqjgatta
-"""
 from __future__ import annotations
 
 from importlib.resources import files
@@ -14,8 +10,17 @@ from enum import Enum
 import pandas as pd
 
 
-class SectionTypes(str, Enum):
-    """TODO"""
+class SectionType(str, Enum):
+    """
+    An enumeration of section type string constants.
+
+    This Enum class is used to provide a type-safe way of representing different section types.
+
+    Attributes:
+        SINGLE_BOARD (str): Represents a section composed of a single board, e.g. 90x35
+        MULTI_BOARD (str): Represents a section composed of multiple boards, e.g. 2/90x35
+        ROUND (str): Represents a round section (unused)
+    """
 
     # NOTE: can use StrEnum from Python 3.11
     SINGLE_BOARD = "single_board"
@@ -27,7 +32,7 @@ def import_section_library() -> pd.DataFrame:
     """
     Imports a section library from a CSV file.
 
-    The CSV file should be located at 'timberas.data/section_library.csv'.
+    The CSV file is located at 'timberas.data/section_library.csv'.
 
     Returns:
         pd.DataFrame: A DataFrame containing the contents of the section library CSV file.
@@ -40,42 +45,41 @@ def import_section_library() -> pd.DataFrame:
 
 
 @dataclass
-class RectangleShape():
-    '''Structural section properties for a rectangular cross-section.'''
-    d: float = nan
-    b: float = nan
+class RectangleShape:
+    """
+    Dataclass representing structural section properties for a rectangular cross-section.
+
+    Properties:
+        A_g: The gross area of the rectangular section.
+        I_x: The moment of inertia along the major axis.
+        I_y: The moment of inertia along the minor axis.
+
+    Attributes:
+        d (float): The height of the rectangle.
+        b (float): The breadth (or width) of the rectangle.
+    """
+
+    d: float
+    b: float
 
     @property
     def A_g(self) -> float:
-        '''Gross area'''
-        return self.d*self.b
+        """Gross area"""
+        return self.d * self.b
 
     @property
     def I_x(self) -> float:
-        '''Moment of inertia - major axis'''
-        return self.b*self.d**3/12
+        """Moment of inertia - major axis"""
+        return self.b * self.d**3 / 12
 
     @property
     def I_y(self) -> float:
-        '''Moment of inertia - minor axis'''
-        return self.d*self.b**3/12
-
-    # def I_w(self) -> float:
-    #     '''Warping constant - NOT IMPLEMENTED'''
-    #     I_w = 0
-    #     return I_w
-    # def J(params: dict) -> float:
-    #     '''Torsion constant - NOT IMPLEMENTED'''
-    #     #J = 0
-    #     a = max(params.d, params.b) #long side
-    #     b = min(params.d, params.b) #short side
-    #     J = a * b**3 * (1/3 - 0.21 * b / a * (1 - b**4 / (12*a**4)))
-    #     return J
+        """Moment of inertia - minor axis"""
+        return self.d * self.b**3 / 12
 
 
 TimberShape = RectangleShape
-
-
+"""DOCSTRING TODO"""
 
 
 @dataclass(kw_only=True)
@@ -96,17 +100,6 @@ class TimberSection:
     A_c: float = nan
     I_x: float = nan
     I_y: float = nan
-    # S_x: float = nan
-    # S_y: float = nan
-    #Z_x: float = nan
-    #Z_y: float = nan
-    #r_x: float = nan
-    #r_y: float = nan
-    # I_w: float = nan
-    # J: float = nan
-
-    # x_c: float = 0
-    # y_c: float = 0
 
     shape: TimberShape = field(init=False)
     # round values to a number of significant figures
@@ -118,9 +111,9 @@ class TimberSection:
 
     def solve_shape(self):
         """TODO"""
-        if self.sec_type == SectionTypes.SINGLE_BOARD:
+        if self.sec_type == SectionType.SINGLE_BOARD:
             self.b_tot = self.n * self.b
-            self.shape = RectangleShape(d = self.d, b = self.b_tot)
+            self.shape = RectangleShape(d=self.d, b=self.b_tot)
         else:
             raise NotImplementedError(
                 f"section type: {self.sec_type} has no shape function"
@@ -131,30 +124,22 @@ class TimberSection:
         self.A_c = self.shape.A_g
         self.I_x = self.shape.I_x
         self.I_y = self.shape.I_y
-        # self.Z_x = self.shape.Z_x
-        # self.S_x = shape_fn.S_x(self)
-        # self.S_y = shape_fn.S_y(self)
-        # self.J = shape_fn.J(self)
-        # self.I_w = shape_fn.I_w(self)
-
-        #self.Z_y = self._Z_y()
-        #self.r_x = self._r_x()
-        #self.r_y = self._r_y()
 
         # round to sig figs
         if self.sig_figs:
             for key, val in list(self.__dict__.items()):
                 if isinstance(val, (float, int)) and (not isnan(val)) and (val != 0):
                     setattr(
-                        self, key, round(val, self.sig_figs - int(floor(log10(abs(val)))) - 1)
+                        self,
+                        key,
+                        round(val, self.sig_figs - int(floor(log10(abs(val)))) - 1),
                     )
-
 
     @classmethod
     def from_dict(cls, **kwargs):
-        '''Create a TimberSection by directly populating attributes from input dictionary.
-         Ignoring dictionary keys which aren't class attributes. Resolves the section if 
-         section properties aren't created by '''
+        """Create a TimberSection by directly populating attributes from input dictionary.
+        Ignoring dictionary keys which aren't class attributes. Resolves the section if
+        section properties aren't created by"""
         obj = cls()
         # all_ann = cls.__annotations__
         for key, val in kwargs.items():
@@ -187,14 +172,29 @@ class TimberSection:
 
     @property
     def Z_x(self) -> float:
-        '''Section modulus about x-axis.
-        NOTE: Z for block section uses b_tot (n x b), but k12 stability factor uses b.'''
-        if self.sec_type == SectionTypes.SINGLE_BOARD:
+        """Section modulus about x-axis."""
+        if self.sec_type == SectionType.SINGLE_BOARD:
             z_mod = self.d * self.b_tot**2 / 6
-        elif self.sec_type == SectionTypes.MULTI_BOARD:
+        elif self.sec_type == SectionType.MULTI_BOARD:
             z_mod = self.d * self.b_tot**2 / 6
         else:
             raise NotImplementedError(
                 f"Section Modulus not defined for {self.sec_type}."
             )
         return z_mod
+
+    @property
+    def Z_y(self) -> float:
+        """Section modulus about y-axis.
+        NOTE: Z for block section uses b_tot (n x b), but k12 stability factor uses b.
+        """
+        raise NotImplementedError
+        # if self.sec_type == SectionType.SINGLE_BOARD:
+        #     raise NotImplementedError
+        # elif self.sec_type == SectionType.MULTI_BOARD:
+        #     raise NotImplementedError
+        # else:
+        #     raise NotImplementedError(
+        #         f"Section Modulus not defined for {self.sec_type}."
+        #     )
+        # return z_mod
