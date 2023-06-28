@@ -3,15 +3,32 @@ TODO
 """
 from __future__ import annotations
 import math
+from math import isnan, floor, log10
 from enum import IntEnum, Enum
 from dataclasses import dataclass, field
 from timberas.material import TimberMaterial
 from timberas.geometry import TimberSection
 
 
-class EffectiveLengthFactor(float,Enum):
-    """Dataclass containing values for effective length factor g_13 based on end restraint.
-    Table 3.2, AS1720.1:2010."""
+class EffectiveLengthFactor(float, Enum):
+    """Dataclass containing values for effective length factor g_13 for columns with intermediate
+    lateral restraint. End restraint conditions as listed in Table 3.2, AS1720.1:2010.
+
+    Attributes:
+        FIXED_FIXED (float): Both ends restrained in position and direction, g_13 = 0.7.
+        FIXED_PINNED (float): One end restrained in position and direction, other in position only,
+          g_13 = 0.85
+        PINNED_PINNED (float): Both ends restrained in position only, g_13 = 1.
+        FIXED_SWAY (float): One end restrained in position and direction, other in partial direction
+        only and not position, g_13 = 1.5
+        FIXED_FREE (float): One end restrained in position and direction, other unrestrained,
+        g_13 = 2.0.
+        FLAT_END_RESTRAINT (float): Flat ends, g_13 = 0.7
+        BOLTED_END_RESTRAINT (float): Both ends held by bolts giving substantial restraint,
+        g_13 = 0.7.
+        FRAMING_STUDS (float): Studs in light framing, slight end restraint, g_13 = 0.9.
+    """
+
     FIXED_FIXED: float = 0.7
     FIXED_PINNED: float = 0.85
     PINNED_PINNED: float = 1.0
@@ -72,6 +89,8 @@ class TimberMember:
     N_dc: float = field(init=False)  # kN
     M_d: float = field(init=False)  # kNm
 
+    sig_figs: int = field(repr=False, default=4)
+
     def __post_init__(self):
         self.sec_name = self.sec.name
         self.mat_name = self.mat.name
@@ -85,6 +104,16 @@ class TimberMember:
         self.N_cy = self._N_cy()
         self.N_dc = self._N_dc()
         self.M_d = self._M_d()
+
+        # round to sig figs
+        if self.sig_figs:
+            for key, val in list(self.__dict__.items()):
+                if isinstance(val, (float, int)) and (not isnan(val)) and (val != 0):
+                    setattr(
+                        self,
+                        key,
+                        round(val, self.sig_figs - int(floor(log10(abs(val)))) - 1),
+                    )
 
     def update_k_1(self, k_1: float) -> TimberSection:
         """Change k_1 factor and recalculate section capacities."""
@@ -131,7 +160,13 @@ class TimberMember:
     def _N_dt(self) -> float:
         """Clause 3.4.1, AS1720.1:2010"""
         return (
-            self.phi * self.k_1 * self.k_4 * self.k_6 * self.mat.f_t * self.sec.A_t / 1000
+            self.phi
+            * self.k_1
+            * self.k_4
+            * self.k_6
+            * self.mat.f_t
+            * self.sec.A_t
+            / 1000
         )
 
     def _M_d(self) -> float:
@@ -150,20 +185,21 @@ class TimberMember:
 
     @property
     def S1(self) -> float:
-        """Slenderness coefficient for lateral buckling under bending, major axis. Clause 3.2.3, 
-        AS1720.1:2010. Not implemented in TimberMember parent class, added in child classes."""
+        """Slenderness coefficient for lateral buckling under bending, major axis. Clause 3.2.3,
+        AS1720.1:2010. Not implemented in TimberMember parent class, added in child classes.
+        """
         raise NotImplementedError
 
     @property
     def S2(self) -> float:
-        """Slenderness coefficient for lateral buckling under bending, minor axis. 
+        """Slenderness coefficient for lateral buckling under bending, minor axis.
         Clause 3.2.3(c), AS1720.1:2010."""
         return 0
 
     @property
     def S3(self) -> float:
         """Slenderness coefficient for lateral buckling under compression, major axis.
-        Clause 3.3.2, AS1720.1:2010. Not implemented in TimberMember parent class, added in 
+        Clause 3.3.2, AS1720.1:2010. Not implemented in TimberMember parent class, added in
         child classes."""
         raise NotImplementedError
 
@@ -173,7 +209,7 @@ class TimberMember:
         # NOTE: b_i or b? valid for other cases?
         calc_1 = self.L_ay / self.sec.b
         calc_2 = self.g_13 * self.L / (self.sec.b)
-        return min(calc_1, calc_2)
+        return round(min(calc_1, calc_2), 2)
 
     @property
     def rho_c(self) -> float:
@@ -224,37 +260,36 @@ class TimberMember:
 
     @property
     def k_9(self) -> float:
-        """Modification factor for strength sharing. Clause 2.4.5.3, AS1720.1:2010. 
+        """Modification factor for strength sharing. Clause 2.4.5.3, AS1720.1:2010.
         Not Implemented in TimberMember parent class, added in child classes."""
         raise NotImplementedError
 
     @property
     def k_12_c(self) -> float:
-        """Modification factor for stability, to allow for slenderness effects on compression 
+        """Modification factor for stability, to allow for slenderness effects on compression
         strength. Minimum of k_12_x and k_12_y. Clause 3.3.3, AS1720.1:2010."""
         return min(self.k_12_x, self.k_12_y)
 
     @property
     def k_12_x(self) -> float:
-        """Modification factor for stability, to allow for slenderness effects on compression 
+        """Modification factor for stability, to allow for slenderness effects on compression
         strength (x-axis). Clause 3.3.3, AS1720.1:2010."""
         return self.calc_k12_compression(self.rho_c, self.S3)
 
     @property
     def k_12_y(self) -> float:
-        """Modification factor for stability, to allow for slenderness effects on compression 
+        """Modification factor for stability, to allow for slenderness effects on compression
         strength (y-axis). Clause 3.3.3, AS1720.1:2010."""
         return self.calc_k12_compression(self.rho_c, self.S4)
 
     @property
     def k_12_bend(self) -> float:
-        """Modification factor for stability, to allow for slenderness effects on bending 
+        """Modification factor for stability, to allow for slenderness effects on bending
         strength. Clause 3.2.4, AS1720.1:2010."""
         return self.calc_k12_bending(self.rho_b, self.S1)
 
-
     def k_6_lookup(self, seasoned: bool, high_temp_latitude: float) -> float:
-        """Modification factor for strength for the effect of temperature. 
+        """Modification factor for strength for the effect of temperature.
         Clause 2.4.3, AS1720.1:2010."""
         if seasoned and high_temp_latitude:
             k_6 = 0.9
@@ -286,21 +321,21 @@ class TimberMember:
 class BoardMember(TimberMember):
     """TODO"""
 
-
     @property
     def S1(self) -> float:
         """Clause 3.2.3.2(b), AS1720.1:2010"""
         # Continuous restraint, tension edge
         # NOTE -> self.b for single and multiboard?
-        return (1.5 * (self.sec.d / self.sec.b)) / (
+        val = (1.5 * (self.sec.d / self.sec.b)) / (
             (((math.pi * self.sec.d) / 600) ** 2 + 0.4) ** 0.5
         )
+        return round(val, 2)
 
     @property
     def S3(self) -> float:
         """Slenderness coefficient for buckling about major axis in rectangular sections.
         Clause 3.3.2.2(a), AS1720.1:2010."""
-        return self.g_13 * self.L / self.sec.d
+        return round(self.g_13 * self.L / self.sec.d, 2)
 
     @property
     def k_9(self) -> float:

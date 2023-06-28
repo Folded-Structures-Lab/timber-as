@@ -3,14 +3,15 @@ This module provides classes and functions for creating representing timber mate
 based on AS1720. 
 
 Classes:
-    GradeType: Enum class defining material grade string constants.
-    TimberMaterial: Represents a timber material based on AS1720.
+    GradeType: Enum class defining material grade string constants. 
+
+    TimberMaterial: Represents a timber material based on AS1720. 
 
 Functions:
-    import_material_library(): Returns a DataFrame containing the contents of the material 
-    library CSV file at timberas/data/material_library.csv
+    import_material_library(): Returns a DataFrame containing the material library defined
+    in timberas/data/material_library.csv
 """
-
+from __future__ import annotations
 from importlib.resources import files
 from dataclasses import dataclass, field
 from enum import Enum
@@ -19,10 +20,8 @@ import pandas as pd
 
 class GradeType(str, Enum):
     """
-    An enumeration of grade type string constants.
-
-    This Enum class is used to provide a type-safe way of representing different grade types.
-    The Enum members represent various grade types such as "F", "MGP", "GL", and "A".
+    An enumeration of grade type string constants. Provide a type-safe way of representing
+    different grade types.
 
     Attributes:
         F_GRADE (str): Represents the "F" grade type
@@ -53,7 +52,7 @@ def import_material_library() -> pd.DataFrame:
 
 @dataclass(kw_only=True)
 class TimberMaterial:
-    """A class to represent a timber material as defined in AS1720.
+    """Represents timber material properties as defined in AS1720.
 
     Attributes:
         name: The name of the timber material.
@@ -172,19 +171,24 @@ class TimberMaterial:
             )
 
     @classmethod
-    def from_dict(cls, **kwargs):
-        """Creates a TimberMaterial object from a dictionary.
+    def from_dict(cls, input_dict: dict) -> TimberMaterial:
+        """Create a TimberMaterial by directly populating attributes from input dictionary,
+        ignoring dictionary keys which aren't class attributes.
 
         Args:
-            **kwargs: The key-value pairs defining the timber material.
+            input_dict: Key-value pairs to define the timber material, keys corresponding to class
+            attribute names will be updated
 
         Returns:
             TimberMaterial: The timber material object.
         """
-        obj = cls()
-        for key, val in kwargs.items():
-            setattr(obj, key, val)
-        return obj
+
+        # Get a list of all class attributes
+        valid_keys = cls.__annotations__.keys()
+        # Only keep key-value pairs where the key is a valid class attribute
+        valid_dict = {k: v for k, v in input_dict.items() if k in valid_keys}
+        # Create a new instance using the valid key-value pairs
+        return cls(**valid_dict)
 
     @classmethod
     def from_library(cls, name: str, library: pd.DataFrame | None = None):
@@ -202,7 +206,7 @@ class TimberMaterial:
             library = import_material_library()
         material = library.loc[library["name"] == name]
         mat_dict = material.to_dict(orient="records")[0]
-        return cls.from_dict(**mat_dict)
+        return cls.from_dict(mat_dict)
 
 
 def main():

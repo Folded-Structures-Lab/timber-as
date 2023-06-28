@@ -2,7 +2,7 @@
 from timberas.member import ApplicationCategory
 from timberas.member import EffectiveLengthFactor
 from timberas.member import BoardMember
-from timberas.geometry import TimberSection, SectionTypes
+from timberas.geometry import TimberSection, SectionType
 from timberas.material import import_material_library, TimberMaterial
 
 
@@ -19,7 +19,7 @@ print(F8)
 # make stud
 stud_dict = {
     "name": "1/90x45",
-    "sec_type": SectionTypes.SINGLE_BOARD,
+    "sec_type": SectionType.SINGLE_BOARD,
     "n": 1,
     "b": 45,
     "d": 90,
@@ -53,13 +53,13 @@ mat.update_from_section_size(sec.d)
 print("\n EG3.1 Design Characteristic Tensile Strength")
 print(f"EG3.1(a) 240 x 45 MGP12 f_t = {mat.f_t} (ANS: 11 MPa)")
 
-sec = TS(d=250, b=50)
+sec = TS(d=250, b=50, sec_type=SectionType.SINGLE_BOARD)
 mat = TM.from_library("F14 Unseasoned Hardwood")
 mat.update_from_section_size(sec.d)
 
 print(f"EG3.1(b) 250 x 50 F14 Unseasoned Hardwood f_t = {mat.f_t} (ANS: 20.2 MPa)")
 
-sec = TS(d=330, b=65)
+sec = TS(d=330, b=65, sec_type=SectionType.SINGLE_BOARD)
 mat = TM.from_library("GL12")
 mat.update_from_section_size(sec.d)
 print(f"EG3.1(c) 330 x 65 GL12 f_t = {mat.f_t} (ANS: 9.6 MPa)")
@@ -119,7 +119,7 @@ print(f"EG4.1(a) Slenderness factor major axis buckling  S3 = {member.S3} (ANS: 
 # Example 4.3 Stud Wall
 mat = TM.from_library("F7 Unseasoned Softwood")
 member_dict = {
-    "sec": TS(d=147, b=47, name="147x47", sec_type=SectionTypes.SINGLE_BOARD),
+    "sec": TS(d=147, b=47, name="147x47", sec_type=SectionType.SINGLE_BOARD),
     "mat": mat,
     "application_cat": ApplicationCategory.SECONDARY_MEMBER,
     "high_temp_latitude": False,
