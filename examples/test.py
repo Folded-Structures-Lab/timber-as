@@ -123,6 +123,7 @@ member_dict = {
     "mat": mat,
     "application_cat": ApplicationCategory.SECONDARY_MEMBER,
     "high_temp_latitude": False,
+    "consider_partial_seasoning": True,
     "k_1": 0.57,
     "r": 0,
     "g_13": EffectiveLengthFactor.FRAMING_STUDS,
@@ -152,4 +153,32 @@ print(
 print(
     f"EG4.4  Check design compression capacity for minor axis bukcling \
         N_cy = {member.N_cy} (ANS: 15.9 kN)"
+)
+
+
+# Example 5.1 Design capacity of a formwork bearer
+from timberas.member import DurationFactorStrength, BendingRestraint
+sec = TS.from_library("Nominal 250x50")
+mat = TM.from_library("F11 Unseasoned Hardwood")
+mat.update_from_section_size(sec.d)
+member_dict = {
+    "sec": sec,
+    "mat": mat,
+    "application_cat": ApplicationCategory.PRIMARY_MEMBER,
+    "k_1": DurationFactorStrength.FIVE_DAYS,
+    "r": 0,
+    "g_13": EffectiveLengthFactor.FRAMING_STUDS,
+    "L": 2700,
+    "L_ay": 450,
+    "restraint": BendingRestraint.DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE
+}
+member = BoardMember(**member_dict)
+
+
+print(
+    "\n EG5.1 Design capacity timber formwork bearer \n"
+    f"Slenderness coefficient S1 = {member.S1} (ANS: 8.87) \n"
+    f"Stability factor k12 = {member.k_12_bend} (ANS: 1.0) \n"
+    f"Design moment capacity M_d = {member.M_d} (ANS: 9.75 kNm) \n"
+    f"(Note: k12 = 1 when compression edge lateral restraint < L_CLR, {member.L_ay} < {member.L_CLR})"
 )

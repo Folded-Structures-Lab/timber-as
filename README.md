@@ -17,6 +17,10 @@ n/a 3.2 k1 factor
 [X] 4.3 load-bearing stud wall capacity check
 [X] 4.4 load-bearing stud wall capacity change
 
+[ ] 5.1 bending design capacity
+
+- nominal vs actual section sizes
+
 - timberas.material.TimberMaterial.update_from_section_size
     - implement interpolation between defined sizes
     - add A17

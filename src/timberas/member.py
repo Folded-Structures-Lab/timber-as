@@ -3,8 +3,8 @@ TODO
 """
 from __future__ import annotations
 import math
-from math import isnan, floor, log10
-from enum import IntEnum, Enum
+from math import nan, isnan, floor, log10
+from enum import auto, IntEnum, Enum
 from dataclasses import dataclass, field
 from timberas.material import TimberMaterial
 from timberas.geometry import TimberSection
@@ -38,7 +38,6 @@ class EffectiveLengthFactor(float, Enum):
     BOLTED_END_RESTRAINT: float = 0.75
     FRAMING_STUDS: float = 0.9
 
-
 class ApplicationCategory(IntEnum):
     """Table 2.1, AS1720.1:2010"""
 
@@ -47,6 +46,27 @@ class ApplicationCategory(IntEnum):
     PRIMARY_MEMBER_POST_DISASTER = 3
     LESS_THAN_25_SQM = 1
     GREATER_THAN_25_SQM = 2
+
+class DurationFactorStrength(float, Enum):
+    """Table 2.3, Table G1?, AS1720.1:2010"""
+    FIVE_SECONDS = 1
+    FIVE_MINUTES = 1
+    FIVE_HOURS = 0.97
+    FIVE_DAYS = 0.94
+    FIVE_MONTHS = 0.8
+    FIFTY_YEARS = 0.57
+    # DL_ONLY = 0.57
+    # DL_AND_LONG_TERM_LL = 0.57
+
+
+class BendingRestraint(str,Enum):
+    '''compresssion edge is critical edge'''
+    DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE = auto()
+    DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE = auto()
+    CONTINUOUS_LATERAL_RESTRAINT_COMPRESSION_EDGE = auto()
+    CONTINUOUS_LATERAL_RESTRAINT_TENSION_EDGE = auto()
+    CONTINUOUS_LATERAL_RESTRAINT_TENSION_AND_DISCRETE_TORSIONAL_COMPRESSION = auto()
+
 
 
 # def locations_latitudes():
@@ -72,16 +92,19 @@ class TimberMember:
 
     application_cat: int = 1  # application category for structural member
     high_temp_latitude: bool = False
+    consider_partial_seasoning: bool = False 
 
     n_com: int = 1
     n_mem: int = 1
     member_spacing: float = 0  # member spacing
 
     L: float = 1  # length
-    L_ay: float = 0
+    L_ay: float = 0 
+    L_ar: float = nan #torsional constraint, compression edge
     g_13: float = 1
     k_1: float = 1.0
     r: float = 0.25  # ratio of temporary to total design action effect
+    restraint: str | BendingRestraint = BendingRestraint.DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE
 
     N_dt: float = field(init=False)  # kN
     N_cx: float = field(init=False)  # kN
@@ -226,18 +249,26 @@ class TimberMember:
     def rho_b(self) -> float:
         """Section E2, AS1720.1:2010"""
         r = self.r if self.r > 0 else 0.25
+        #NOTE - some of this term is a material attribute only
         if self.mat.seasoned:
             rho = 14.71 * (self.mat.E / self.mat.f_b) ** (-0.480) * r ** (-0.061)
         else:
             rho = 11.63 * (self.mat.E / self.mat.f_b) ** (-0.435) * r ** (-0.110)
         return rho
+    
+    @property
+    def L_CLR(self) -> float:
+        """Clause"""
+        raise NotImplementedError
 
     @property
     def k_4(self) -> float:
         """Table 2.5, AS1720.1:2010"""
         if self.mat.seasoned:
             return 1.0
-        else:
+        elif not self.consider_partial_seasoning:
+            return 1.0 
+        else: #material is unseasoned and consider_partial_seasoning
             # NOTE - k_4 between 75 and 100mm not defined?
             least_dim = min(self.sec.b, self.sec.d)
             if least_dim <= 38:
@@ -326,9 +357,17 @@ class BoardMember(TimberMember):
         """Clause 3.2.3.2(b), AS1720.1:2010"""
         # Continuous restraint, tension edge
         # NOTE -> self.b for single and multiboard?
-        val = (1.5 * (self.sec.d / self.sec.b)) / (
-            (((math.pi * self.sec.d) / 600) ** 2 + 0.4) ** 0.5
-        )
+        match self.restraint:
+            case BendingRestraint.DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE:
+                val = 1.25 * self.sec.d / self.sec.b * (self.L_ay / self.sec.d)**0.5
+            case BendingRestraint.DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE:
+                val = (self.sec.d/self.sec.b)**1.35 * (self.L_ay / self.sec.d)**0.25
+            case BendingRestraint.CONTINUOUS_LATERAL_RESTRAINT_COMPRESSION_EDGE:
+                val = 2.25 * self.sec.d / self.sec.b 
+            case BendingRestraint.CONTINUOUS_LATERAL_RESTRAINT_TENSION_EDGE:
+                bot = (((math.pi * self.sec.d) / self.L_ar) ** 2 + 0.4) ** 0.5
+                val = 1.5 * (self.sec.d / self.sec.b) / bot
+    
         return round(val, 2)
 
     @property
@@ -347,6 +386,12 @@ class BoardMember(TimberMember):
         )
 
     # for n in n_all:
+
+    @property
+    def L_CLR(self) -> float:
+        '''3.2.3.2 '''
+        val = 64 / self.sec.d * (self.sec.b / self.rho_b)**2
+        return val
 
     @property
     def g_31(self) -> float:

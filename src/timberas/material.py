@@ -147,7 +147,7 @@ class TimberMaterial:
                 self.f_t = round(self.f_t * (150 / d) ** 0.167, 3)
                 print(
                     f"Tensile strength f_t changed from {original_f_t} to {self.f_t}"
-                    "due to section size, Table H.2 Note 2"
+                    " due to section size, Table H.2 Note 2"
                 )
             if d > 300:
                 # Table H.2 Note 1

@@ -170,10 +170,8 @@ class TimberSection:
     @property
     def Z_x(self) -> float:
         """Section modulus about x-axis."""
-        if self.sec_type == SectionType.SINGLE_BOARD:
-            z_mod = self.d * self.b_tot**2 / 6
-        elif self.sec_type == SectionType.MULTI_BOARD:
-            z_mod = self.d * self.b_tot**2 / 6
+        if self.sec_type in [SectionType.SINGLE_BOARD,  SectionType.MULTI_BOARD]:
+            z_mod = self.b_tot * self.d**2 / 6
         else:
             raise NotImplementedError(
                 f"Section Modulus not defined for {self.sec_type}."

@@ -1,6 +1,7 @@
 ﻿name,grade,seasoned,grade_type,f_b,f_t,f_s,f_c,E,G,density,phi_1,phi_2,phi_3,f_p,f_l,f_sj,f_tp,joint_group
 F17 Seasoned Hardwood, F17,TRUE, F,42,25,3.6,34,14000,960,650,0.95,0.85,0.75,,,,,
 F14 Unseasoned Hardwood,F14,FALSE,F,36,22,3.3,27,12000,800,,0.9,0.7,0.6,,,,,
+F11 Unseasoned Hardwood,F11,FALSE,F,31,18,2.8,22,10500,700,,0.9,0.7,0.6,,,,,
 F8 Unseasoned Softwood,F8,FALSE,F,22,12,2.2,18,9100,,610,0.9,0.7,0.6,,,,,
 F7 Unseasoned Softwood,F7,FALSE,F,18,8.9,1.9,13,7900,,530,0.9,0.7,0.6,,,,,
 F5 Unseasoned Softwood,F5,FALSE,F,14,7.3,1.6,11,6900,,460,0.9,0.7,0.6,,,,,
