@@ -46,8 +46,8 @@ class SectionType(str, Enum):
 class TimberSection:
     """
     Calculates geometric and structural section properties from cross-section parameters. Selects
-    shape class from sec_type to calculate: A_g, A_t, A_c, I_x, I_y. Class properties Z_x, Z_y, and
-    b_tot calculated as derived attributes.
+    shape class from sec_type to calculate: A_g, A_t, A_c, I_x, I_y. Class properties Z_x, Z_y,
+    b_tot, and A_s calculated as derived attributes.
 
     Attributes:
         sec_type (SectionType | str): The type of the section.
@@ -170,7 +170,7 @@ class TimberSection:
     @property
     def Z_x(self) -> float:
         """Section modulus about x-axis."""
-        if self.sec_type in [SectionType.SINGLE_BOARD,  SectionType.MULTI_BOARD]:
+        if self.sec_type in [SectionType.SINGLE_BOARD, SectionType.MULTI_BOARD]:
             z_mod = self.b_tot * self.d**2 / 6
         else:
             raise NotImplementedError(
@@ -193,6 +193,11 @@ class TimberSection:
         #         f"Section Modulus not defined for {self.sec_type}."
         #     )
         # return z_mod
+
+    @property
+    def A_s(self) -> float:
+        """shear plane area 3.2.5"""
+        return 2 / 3 * self.d * self.b_tot
 
 
 def import_section_library() -> pd.DataFrame:

@@ -38,6 +38,7 @@ class EffectiveLengthFactor(float, Enum):
     BOLTED_END_RESTRAINT: float = 0.75
     FRAMING_STUDS: float = 0.9
 
+
 class ApplicationCategory(IntEnum):
     """Table 2.1, AS1720.1:2010"""
 
@@ -47,8 +48,10 @@ class ApplicationCategory(IntEnum):
     LESS_THAN_25_SQM = 1
     GREATER_THAN_25_SQM = 2
 
+
 class DurationFactorStrength(float, Enum):
     """Table 2.3, Table G1?, AS1720.1:2010"""
+
     FIVE_SECONDS = 1
     FIVE_MINUTES = 1
     FIVE_HOURS = 0.97
@@ -59,14 +62,14 @@ class DurationFactorStrength(float, Enum):
     # DL_AND_LONG_TERM_LL = 0.57
 
 
-class BendingRestraint(str,Enum):
-    '''compresssion edge is critical edge'''
+class BendingRestraint(str, Enum):
+    """compresssion edge is critical edge"""
+
     DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE = auto()
     DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE = auto()
     CONTINUOUS_LATERAL_RESTRAINT_COMPRESSION_EDGE = auto()
     CONTINUOUS_LATERAL_RESTRAINT_TENSION_EDGE = auto()
     CONTINUOUS_LATERAL_RESTRAINT_TENSION_AND_DISCRETE_TORSIONAL_COMPRESSION = auto()
-
 
 
 # def locations_latitudes():
@@ -92,25 +95,28 @@ class TimberMember:
 
     application_cat: int = 1  # application category for structural member
     high_temp_latitude: bool = False
-    consider_partial_seasoning: bool = False 
+    consider_partial_seasoning: bool = False
 
     n_com: int = 1
     n_mem: int = 1
     member_spacing: float = 0  # member spacing
 
     L: float = 1  # length
-    L_ay: float = 0 
-    L_ar: float = nan #torsional constraint, compression edge
+    L_ay: float = 0
+    L_ar: float = nan  # torsional constraint, compression edge
     g_13: float = 1
     k_1: float = 1.0
     r: float = 0.25  # ratio of temporary to total design action effect
-    restraint: str | BendingRestraint = BendingRestraint.DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE
+    restraint: str | BendingRestraint = (
+        BendingRestraint.DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE
+    )
 
     N_dt: float = field(init=False)  # kN
     N_cx: float = field(init=False)  # kN
     N_cy: float = field(init=False)  # kN
     N_dc: float = field(init=False)  # kN
     M_d: float = field(init=False)  # kNm
+    V_d: float = field(init=False)  # kNm
 
     sig_figs: int = field(repr=False, default=4)
 
@@ -127,6 +133,7 @@ class TimberMember:
         self.N_cy = self._N_cy()
         self.N_dc = self._N_dc()
         self.M_d = self._M_d()
+        self.V_d = self._V_d()
 
         # round to sig figs
         if self.sig_figs:
@@ -206,6 +213,19 @@ class TimberMember:
             / 1e6
         )
 
+    def _V_d(self) -> float:
+        """flexural shear strength Cl 3.2.5"""
+        cap = (
+            self.phi
+            * self.k_1
+            * self.k_4
+            * self.k_6
+            * self.mat.f_s
+            * self.sec.A_s
+            / 1e3
+        )
+        return cap
+
     @property
     def S1(self) -> float:
         """Slenderness coefficient for lateral buckling under bending, major axis. Clause 3.2.3,
@@ -249,13 +269,13 @@ class TimberMember:
     def rho_b(self) -> float:
         """Section E2, AS1720.1:2010"""
         r = self.r if self.r > 0 else 0.25
-        #NOTE - some of this term is a material attribute only
+        # NOTE - some of this term is a material attribute only
         if self.mat.seasoned:
             rho = 14.71 * (self.mat.E / self.mat.f_b) ** (-0.480) * r ** (-0.061)
         else:
             rho = 11.63 * (self.mat.E / self.mat.f_b) ** (-0.435) * r ** (-0.110)
         return rho
-    
+
     @property
     def L_CLR(self) -> float:
         """Clause"""
@@ -267,8 +287,8 @@ class TimberMember:
         if self.mat.seasoned:
             return 1.0
         elif not self.consider_partial_seasoning:
-            return 1.0 
-        else: #material is unseasoned and consider_partial_seasoning
+            return 1.0
+        else:  # material is unseasoned and consider_partial_seasoning
             # NOTE - k_4 between 75 and 100mm not defined?
             least_dim = min(self.sec.b, self.sec.d)
             if least_dim <= 38:
@@ -359,15 +379,17 @@ class BoardMember(TimberMember):
         # NOTE -> self.b for single and multiboard?
         match self.restraint:
             case BendingRestraint.DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE:
-                val = 1.25 * self.sec.d / self.sec.b * (self.L_ay / self.sec.d)**0.5
+                val = 1.25 * self.sec.d / self.sec.b * (self.L_ay / self.sec.d) ** 0.5
             case BendingRestraint.DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE:
-                val = (self.sec.d/self.sec.b)**1.35 * (self.L_ay / self.sec.d)**0.25
+                val = (self.sec.d / self.sec.b) ** 1.35 * (
+                    self.L_ay / self.sec.d
+                ) ** 0.25
             case BendingRestraint.CONTINUOUS_LATERAL_RESTRAINT_COMPRESSION_EDGE:
-                val = 2.25 * self.sec.d / self.sec.b 
+                val = 2.25 * self.sec.d / self.sec.b
             case BendingRestraint.CONTINUOUS_LATERAL_RESTRAINT_TENSION_EDGE:
                 bot = (((math.pi * self.sec.d) / self.L_ar) ** 2 + 0.4) ** 0.5
                 val = 1.5 * (self.sec.d / self.sec.b) / bot
-    
+
         return round(val, 2)
 
     @property
@@ -389,8 +411,8 @@ class BoardMember(TimberMember):
 
     @property
     def L_CLR(self) -> float:
-        '''3.2.3.2 '''
-        val = 64 / self.sec.d * (self.sec.b / self.rho_b)**2
+        """3.2.3.2"""
+        val = 64 / self.sec.d * (self.sec.b / self.rho_b) ** 2
         return val
 
     @property
