@@ -213,8 +213,8 @@ print(
     "b) Shear capacity check\n"
     f"Design shear capacity V_d = {member.V_d} (ANS: 71.6 kNm) \n"
 )
-#SERVICEABILITY CHECK: TODO
-#BEARING CAPACITY CHECK: TODO
+# SERVICEABILITY CHECK: TODO
+# BEARING CAPACITY CHECK: TODO
 member.update_k_1(DurationFactorStrength.FIFTY_YEARS)
 print(
     "c) Bending capacity check, long-term load case \n"
