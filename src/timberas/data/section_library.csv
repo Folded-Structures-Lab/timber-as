@@ -1,54 +1,8 @@
-﻿name,sec_type,n,d,b,availability,timber 
-70x35,single_board,1,70,35,common,seasoned softwood
-70x45,single_board,1,70,45,common,seasoned softwood
-70x70,multi_board,2,70,35,limited,seasoned softwood
-90x35,single_board,1,90,35,common,seasoned softwood
-90x45,single_board,1,90,45,common,seasoned softwood
-90x70,multi_board,2,90,35,varied,seasoned softwood
-90x90,multi_board,2,90,45,common,seasoned softwood
-120x35,single_board,1,120,35,common,seasoned softwood
-120x45,single_board,1,120,45,common,seasoned softwood
-140x35,single_board,1,140,35,common,seasoned softwood
-140x45,single_board,1,140,45,common,seasoned softwood
-190x35,single_board,1,190,35,varied,seasoned softwood
-190x45,single_board,1,190,45,common,seasoned softwood
-240x35,single_board,1,240,35,varied,seasoned softwood
-240x45,single_board,1,240,45,varied,seasoned softwood
-290x35,single_board,1,290,35,limited,seasoned softwood
-290x45,single_board,1,290,45,limited,seasoned softwood
-50x25,single_board,1,50,25,common,unseasoned hardwood
-50x38,single_board,1,50,38,common,unseasoned hardwood
-50x50,multi_board,2,50,25,limited,unseasoned hardwood
-75x25,single_board,1,75,25,common,unseasoned hardwood
-75x38,single_board,1,75,38,common,unseasoned hardwood
-75x50,multi_board,2,75,25,common,unseasoned hardwood
-75x75,multi_board,2,75,38,varied,unseasoned hardwood
-100x25,single_board,1,100,25,common,unseasoned hardwood
-100x38,single_board,1,100,38,common,unseasoned hardwood
-100x50,multi_board,2,100,25,common,unseasoned hardwood
-100x75,multi_board,2,100,38,common,unseasoned hardwood
-125x25,single_board,1,125,25,limited,unseasoned hardwood
-125x38,single_board,1,125,38,common,unseasoned hardwood
-125x50,multi_board,2,125,25,common,unseasoned hardwood
-125x75,multi_board,2,125,38,varied,unseasoned hardwood
-150x25,single_board,1,150,25,common,unseasoned hardwood
-150x38,single_board,1,150,38,common,unseasoned hardwood
-150x50,multi_board,2,150,25,common,unseasoned hardwood
-150x75,multi_board,2,150,38,common,unseasoned hardwood
-175x25,single_board,1,175,25,limited,unseasoned hardwood
-175x38,single_board,1,175,38,common,unseasoned hardwood
-175x50,multi_board,2,175,25,varied,unseasoned hardwood
-175x75,multi_board,2,175,38,limited,unseasoned hardwood
-200x25,single_board,1,200,25,varied,unseasoned hardwood
-200x38,single_board,1,200,38,common,unseasoned hardwood
-200x50,multi_board,2,200,25,common,unseasoned hardwood
-200x75,multi_board,2,200,38,varied,unseasoned hardwood
-225x38,single_board,1,225,38,common,unseasoned hardwood
-225x50,multi_board,2,225,25,common,unseasoned hardwood
-225x75,multi_board,2,225,38,limited,unseasoned hardwood
-250x38,single_board,1,250,38,common,unseasoned hardwood
-250x50,multi_board,2,250,25,common,unseasoned hardwood
-250x75,multi_board,2,250,38,limited,unseasoned hardwood
-300x38,single_board,1,300,38,varied,unseasoned hardwood
-300x50,multi_board,2,300,25,varied,unseasoned hardwood
-300x75,multi_board,2,300,38,limited,unseasoned hardwood
+﻿name,sec_type,n,d,b, availability
+240x45,single_board,1,240,45,common
+250x50,single_board,1,250,50,common
+330x65,single_board,1,330,65,common
+90x35,single_board,1,90,35,common
+190x35,single_board,1,190,35,common
+Nominal 250x50,single_board,1,247,47,common
+GL395x85,single_board,1,391,82,common
