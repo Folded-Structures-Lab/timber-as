@@ -1,5 +1,5 @@
 # About
-*timberas* is a Python package with tools to support research and design of Australian timber structures. It can be used to detemine the material properties, section properties, and design capacities for structural members as per Australian Standard AS1720.1:2020 (Timber Structures Part 1: Design Methods). 
+*timberas* is a Python package with tools to support research and design of Australian timber structures. It can be used to determine the material properties, section properties, and design capacities for structural members as per Australian Standard AS1720.1:2020 (Timber Structures Part 1: Design Methods). 
 
 # Documentation
 Detailed information on *timberas* is available in package documentation at [timberas.readthedocs.io](https://timberas.readthedocs.io/). This includes project background, examples, and an API reference guide.
@@ -22,6 +22,11 @@ If you have questions, feedback, or suggestions for further development, please 
 Similarly, if you find any bugs, or are interested to contribute to the project, please create an issue or email Joe.
 
 
+# License 
+*timberas* is an open source engineering tool provided under an MIT License. Please refer to the [LICENSE](./LICENSE.md) file for more information. 
+
+Please note that this software has been developed by student and academic engineering researchers, NOT by chartered or registered engineers. 
+
 # Acknowledgements
 This package has been developed from research projects supported by the [University of Queensland](https://civil.uq.edu.au/), [ARC Future Timber Hub](https://futuretimberhub.org/) (2016-2021), and [ARC Advance Timber Hub](https://www.advance-timber-hub.org/) (2022-).
 
@@ -29,8 +34,3 @@ This package has been developed from research projects supported by the [Univers
 If you use *timberas* for projects or scientific publications, please consider citing our journal paper:
 > Jiang, J., Ottenhaus, L. M., & Gattas, J. M. (2023). A parametric design framework for timber framing span tables. *Australian Journal of Civil Engineering*, 1-16. [doi:10.1080/14488353.2023.2227432](https://doi.org/10.1080/14488353.2023.2227432).
 
-
-# License 
-*timberas* is an open source engineering tool provided under an MIT License. Please reference to the [LICENSE](./LICENSE.md) file for more information. 
-
-Please note that this software has been developed by student and academic engineering researchers, NOT by chartered or registered engineers. 
