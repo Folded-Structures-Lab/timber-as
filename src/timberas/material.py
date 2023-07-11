@@ -155,7 +155,7 @@ class TimberMaterial:
                 self.f_b = round(self.f_b * (300 / d) ** 0.167, 3)
                 print(
                     f"Bending strength f_b changed from {original_f_b} to {self.f_b}"
-                    "due to section size, Table H.2 Note 1"
+                    " due to section size, Table H.2 Note 1"
                 )
         elif self.grade_type == GradeType.A_GRADE:
             print(f"requires {d} and {b}")
@@ -167,7 +167,7 @@ class TimberMaterial:
             self.f_t = round(self.f_t * (150 / d) ** 0.167, 3)
             print(
                 f"Tensile strength f_t changed from {original_f_t} to {self.f_t}"
-                "due to section size, Table 7.1 Note"
+                " due to section size, Table 7.1 Note"
             )
 
     @classmethod
