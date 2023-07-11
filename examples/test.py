@@ -28,8 +28,6 @@ stud = TimberSection(**stud_dict)
 print(stud)
 
 
-# g_13 = EffectiveLengthFactor.PinnedPinned
-
 # EXAMPLE 2.11, Capacity Factor, pg ...
 MGP10 = TimberMaterial.from_library("MGP10")
 tm = BoardMember(sec=stud, mat=MGP10, application_cat=1)
@@ -213,8 +211,8 @@ print(
     "b) Shear capacity check\n"
     f"Design shear capacity V_d = {member.V_d} (ANS: 71.6 kNm) \n"
 )
-#SERVICEABILITY CHECK: TODO
-#BEARING CAPACITY CHECK: TODO
+# SERVICEABILITY CHECK: TODO
+# BEARING CAPACITY CHECK: TODO
 member.update_k_1(DurationFactorStrength.FIFTY_YEARS)
 print(
     "c) Bending capacity check, long-term load case \n"

@@ -2,8 +2,10 @@ from timberas.geometry import TimberSection as TS
 from timberas.material import TimberMaterial as TM
 from timberas.member import BoardMember, EffectiveLengthFactor
 
+#define a section
+sec = TS.from_library("2/90x45")
 
-sec = TS.from_library("2/90x35")
+#define a material
 mat = TM.from_library("MGP12")
 member_dict = {
     "sec": sec,
