@@ -12,8 +12,8 @@ pip install timberas
 For more detailed instructions, please refer to the [documentation]([https://timberas.readthedocs.io]).
 
 # Current Features
-- **Material library**: create timber materials from typical Australian grade classifications (F-Grade, MGP, Glulam), or from custom user input.
 - **Section library**: define sections and calculate section properties from typical Australian timber product dimensions, or from custom user input. 
+- **Material library**: create timber materials from typical Australian grade classifications (F-Grade, MGP, Glulam), or from custom user input.
 - **Design capacity calculations**: solve the design capacities of structural timber members in tension, compression, bending, and shear, following AS1720.1 design methods.
 
 # Questions, Feedback, and Contributions 

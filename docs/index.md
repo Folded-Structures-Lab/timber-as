@@ -1,6 +1,6 @@
 # About
 
-*timberas* is a Python package developed to support research and design of Australian timber structures. It can be used to determine the material properties, section properties, and design capacities for structural members as per Australian Standard AS1720.1:2020 (Timber Structures Part 1: Design Methods). 
+*timberas* is a Python package developed to support research and design of Australian timber structures. It can be used to determine the section properties, materials properties, and design capacities for structural members as per Australian Standard AS1720.1:2020 (Timber Structures Part 1: Design Methods). 
 
 *timberas* is developed by [Dr Joe Gattas](https://researchers.uq.edu.au/researcher/9443)  and research collaborators at the [University of Queensland](https://civil.uq.edu.au/) and [ARC Advance Timber Hub](https://www.advance-timber-hub.org/). Please see [Acknowledgements](thank-you.md) for a full list of project contributors.
 
@@ -8,7 +8,7 @@
 # Contents
 - [Installation](install.md)
 - Tutorials
-    - [Getting Started](example-start.md): Create material, section, and timber member definitions. 
+    - [Getting Started](example-start.md): Create section, material, and member definitions. 
     - [Structural Design Capacities](example-capacity.md): Solve  tension, compression, bending, and shear design capacities. 
 - [API Reference](reference.md)
 

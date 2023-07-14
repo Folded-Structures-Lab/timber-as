@@ -56,7 +56,6 @@ class TimberSection:
         d (float): The depth of the section.
         n (int, optional): The number of members in the section. Default = 1.
         name (str, optional): The name of the section. Defaults to an empty string.
-        section (str, optional): The section of the timber. Defaults to an empty string.
         shape (TimberShape): The shape of the section, calculated after initialization.
         A_g (float): The gross area of the section, calculated after shape is solved.
         A_t (float): The tensile area of the section, calculated after shape is solved.
@@ -73,7 +72,6 @@ class TimberSection:
     d: float
     n: int = 1
     name: str = ""
-    section: str = ""
 
     # b_tot: float = field(init=False)
     A_g: float = nan
@@ -91,7 +89,7 @@ class TimberSection:
 
     def solve_shape(self):
         """Sets shape class based on sec_type and recalculates relevant section properties."""
-        if self.sec_type == SectionType.SINGLE_BOARD:
+        if self.sec_type in [SectionType.SINGLE_BOARD, SectionType.MULTI_BOARD]:
             self.shape = RectangleShape(d=self.d, b=self.b_tot)
         else:
             raise NotImplementedError(
