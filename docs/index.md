@@ -2,14 +2,13 @@
 
 *timberas* is a Python package developed to support research and design of Australian timber structures. It can be used to determine the section properties, materials properties, and design capacities for structural members as per Australian Standard AS1720.1:2020 (Timber Structures Part 1: Design Methods). 
 
-*timberas* is developed by [Dr Joe Gattas](https://researchers.uq.edu.au/researcher/9443)  and research collaborators at the [University of Queensland](https://civil.uq.edu.au/) and [ARC Advance Timber Hub](https://www.advance-timber-hub.org/). Please see [Acknowledgements](thank-you.md) for a full list of project contributors.
-
+*timberas* is developed by [Dr Joe Gattas](https://researchers.uq.edu.au/researcher/9443)  and research collaborators at the [University of Queensland](https://civil.uq.edu.au/) and [ARC Advance Timber Hub](https://www.advance-timber-hub.org/). 
 
 # Contents
 - [Installation](install.md)
 - Tutorials
-    - [Getting Started](example-start.md): Create section, material, and member definitions. 
-    - [Structural Design Capacities](example-capacity.md): Solve  tension, compression, bending, and shear design capacities. 
+    - [Getting Started I](tutorial-1.md): Create timber sections and materials
+    - [Getting Started II](tutorial-2.md) Create a timber member and solve member design capacities. 
 - [API Reference](reference.md)
 
 
@@ -21,13 +20,12 @@ Please see the project Github repository and README file for the latest updates 
 
 
 # Acknowledgements
-This package has been developed from research projects supported by the [University of Queensland](https://civil.uq.edu.au/), [ARC Future Timber Hub](https://futuretimberhub.org/) (2016-2021), and [ARC Advance Timber Hub](https://www.advance-timber-hub.org/) (2022-).
-
+This package has been developed from research projects supported by the [University of Queensland](https://civil.uq.edu.au/) and [ARC Future Timber Hub](https://futuretimberhub.org/).
 
 If you use *timberas* for projects or scientific publications, please consider citing our journal paper:
 > Jiang, J., Ottenhaus, L. M., & Gattas, J. M. (2023). A parametric design framework for timber framing span tables. *Australian Journal of Civil Engineering*, 1-16. [doi:10.1080/14488353.2023.2227432](https://doi.org/10.1080/14488353.2023.2227432).
 
-Contributors: 
+## Contributors: 
 
 - [Dr Joe Gattas](https://researchers.uq.edu.au/researcher/9443)
 - Jian Jiang

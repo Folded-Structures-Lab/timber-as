@@ -1,14 +1,12 @@
 # Installation
 
-Welcome to the installation guide of *timberas*. This guide will guide you through the installation process.
+This page will guide you through the installation process for *timberas*.
 
 ## Prerequisites
 
-Before you begin, ensure you have met the following requirements:
-
+Before you begin, ensure:
 * You have installed Python 3.10+.
 * You have a basic understanding of Python programming.
-
 
 ## Installation
 

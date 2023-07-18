@@ -1,4 +1,4 @@
-﻿name,sec_type,n,d,b,availability,material
+﻿name,shape_type,n,d,b,availability,material
 70x35,single_board,1,70,35,common,seasoned softwood
 70x45,single_board,1,70,45,common,seasoned softwood
 2/70x35,multi_board,2,70,35,limited,seasoned softwood

@@ -30,8 +30,8 @@ nav:
     - About: index.md
     - Installation: install.md
   - Tutorials: 
-    - Getting Started: tutorial-1.md
-    - Structural Design Capacities: tutorial-2.md
+    - Getting Started I: tutorial-1.md
+    - Getting Started II: tutorial-2.md
   - Technical:
     - API Reference: reference.md
 
