@@ -21,7 +21,7 @@ from __future__ import annotations
 from importlib.resources import files
 from dataclasses import dataclass, field
 from math import nan, isnan, floor, log10
-from enum import Enum, auto
+from enum import Enum
 import pandas as pd
 
 
