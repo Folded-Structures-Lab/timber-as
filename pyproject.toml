@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "timberas"
-version = "0.1"
+version = "0.2.0"
 authors = [
   { name="Joe Gattas", email="j.gattas@uq.edu.au" },
 ]
@@ -17,6 +17,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 keywords = ["AS1170", "AS1684", "timber structures", "structural engineering"]
+dependencies = [
+    "numpy>=1.25.0",
+    "pandas>=2.0.2"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/Folded-Structures-Lab/timber-as"

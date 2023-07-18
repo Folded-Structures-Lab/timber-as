@@ -13,7 +13,7 @@
 
 
 # Support
-Please see the project Github repository and README file for the latest updates and issues. 
+Please see the project [Github repository](https://github.com/Folded-Structures-Lab/timber-as) and README file for the latest updates and issues. 
 
 # License
 *timberas* is provided under an MIT License. Please refer to the project Github repository and LICENSE file for more information. 
