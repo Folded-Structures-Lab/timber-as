@@ -1,4 +1,4 @@
-site_name: My Docs
+site_name: timberas
 
 theme:
   name: readthedocs
@@ -26,11 +26,14 @@ plugins:
 
 
 nav:
-  - timberas docs: index.md
-  - tutorials.md
-  - How-To Guides: how-to-guides.md
-  - API: reference.md
-  - explanation.md
+  - Introduction:
+    - About: index.md
+    - Installation: install.md
+  - Tutorials: 
+    - Getting Started I: tutorial-1.md
+    - Getting Started II: tutorial-2.md
+  - Technical:
+    - API Reference: reference.md
 
 watch:
   - src/timberas

@@ -2,7 +2,7 @@
 This module provides classes and functions to manage timber sections and their geometric properties.
 
 Classes:    
-    SectionType: Enum class defining section type string constants. 
+    ShapeType: Enum class defining section type string constants. 
 
     TimberSection: A class is used to manage timber section attributes. 
 
@@ -21,11 +21,11 @@ from __future__ import annotations
 from importlib.resources import files
 from dataclasses import dataclass, field
 from math import nan, isnan, floor, log10
-from enum import Enum
+from enum import Enum, auto
 import pandas as pd
 
 
-class SectionType(str, Enum):
+class ShapeType(str, Enum):
     """
     An enumeration of section type string constants. Provides a type-safe way of representing
     different section types.
@@ -46,17 +46,16 @@ class SectionType(str, Enum):
 class TimberSection:
     """
     Calculates geometric and structural section properties from cross-section parameters. Selects
-    shape class from sec_type to calculate: A_g, A_t, A_c, I_x, I_y. Class properties Z_x, Z_y,
+    shape class from shape_type to calculate: A_g, A_t, A_c, I_x, I_y. Class properties Z_x, Z_y,
     b_tot, and A_s calculated as derived attributes.
 
     Attributes:
-        sec_type (SectionType | str): The type of the section.
+        shape_type (ShapeType | str): The type of the section shape.
 
         b (float): The breadth of the section.
         d (float): The depth of the section.
         n (int, optional): The number of members in the section. Default = 1.
         name (str, optional): The name of the section. Defaults to an empty string.
-        section (str, optional): The section of the timber. Defaults to an empty string.
         shape (TimberShape): The shape of the section, calculated after initialization.
         A_g (float): The gross area of the section, calculated after shape is solved.
         A_t (float): The tensile area of the section, calculated after shape is solved.
@@ -67,13 +66,12 @@ class TimberSection:
         Defaults to 4.
     """
 
-    sec_type: SectionType | str
+    shape_type: ShapeType | str
 
     b: float
     d: float
     n: int = 1
     name: str = ""
-    section: str = ""
 
     # b_tot: float = field(init=False)
     A_g: float = nan
@@ -90,12 +88,12 @@ class TimberSection:
         self.solve_shape()
 
     def solve_shape(self):
-        """Sets shape class based on sec_type and recalculates relevant section properties."""
-        if self.sec_type == SectionType.SINGLE_BOARD:
+        """Sets shape class based on shape_type and recalculates relevant section properties."""
+        if self.shape_type in [ShapeType.SINGLE_BOARD, ShapeType.MULTI_BOARD]:
             self.shape = RectangleShape(d=self.d, b=self.b_tot)
         else:
             raise NotImplementedError(
-                f"section type: {self.sec_type} has no shape function"
+                f"section type: {self.shape_type} has no shape function"
             )
 
         if self.A_g is nan:
@@ -170,11 +168,11 @@ class TimberSection:
     @property
     def Z_x(self) -> float:
         """Section modulus about x-axis."""
-        if self.sec_type in [SectionType.SINGLE_BOARD, SectionType.MULTI_BOARD]:
+        if self.shape_type in [ShapeType.SINGLE_BOARD, ShapeType.MULTI_BOARD]:
             z_mod = self.b_tot * self.d**2 / 6
         else:
             raise NotImplementedError(
-                f"Section Modulus not defined for {self.sec_type}."
+                f"Section Modulus not defined for {self.shape_type}."
             )
         return z_mod
 
@@ -184,13 +182,13 @@ class TimberSection:
         NOTE: Z for block section uses b_tot (n x b), but k12 stability factor uses b.
         """
         raise NotImplementedError
-        # if self.sec_type == SectionType.SINGLE_BOARD:
+        # if self.shape_type == ShapeType.SINGLE_BOARD:
         #     raise NotImplementedError
-        # elif self.sec_type == SectionType.MULTI_BOARD:
+        # elif self.shape_type == ShapeType.MULTI_BOARD:
         #     raise NotImplementedError
         # else:
         #     raise NotImplementedError(
-        #         f"Section Modulus not defined for {self.sec_type}."
+        #         f"Section Modulus not defined for {self.shape_type}."
         #     )
         # return z_mod
 

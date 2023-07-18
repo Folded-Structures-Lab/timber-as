@@ -28,8 +28,6 @@ stud = TimberSection(**stud_dict)
 print(stud)
 
 
-# g_13 = EffectiveLengthFactor.PinnedPinned
-
 # EXAMPLE 2.11, Capacity Factor, pg ...
 MGP10 = TimberMaterial.from_library("MGP10")
 tm = BoardMember(sec=stud, mat=MGP10, application_cat=1)
