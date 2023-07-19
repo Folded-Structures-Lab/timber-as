@@ -6,7 +6,7 @@ Python code for the following examples are available in the Github repository [[
 
 ## Capacity Factor
 
-Capacity factor phi is used to calculate the design capacities of structural timber; the value of phi varies based on material type and intended member application (*application category*, ref. Table 2.1 AS1720.1).
+Capacity factor phi \phi is used to calculate the design capacities of structural timber; the value of phi varies based on material type and intended member application (*application category*, ref. Table 2.1 AS1720.1).
 
 In *timberas*, capacity factors for all application categories as object attributes in the *TimberMaterial* class (*phi_1*, *phi_2*, *phi_3*). The *TimberMaterial.phi()* method is then used to select the approriate capacity factor based on an input application category. 
 
@@ -42,6 +42,7 @@ Application category can be input as an integer value, or by using the *Applicat
 
 
 **TODO**
+ the *member.update_k_1()* method to change the load duration factor and resolve member capacities 
 
 >*Example 3.3, Timber Design Handbook (page 188)*
 > 
@@ -49,46 +50,102 @@ Application category can be input as an integer value, or by using the *Applicat
 > (a) a 50+ years duration load only; and  
 > (b) a wind load combination
 
-Solution: 
+Solution 3.3(a): 
 ```
 from timberas.geometry import TimberSection as TS
 from timberas.material import TimberMaterial as TM
 from timberas.member import BoardMember, DurationFactorStrength
 
-#create a section and remove bolt holes from section tensile area
+# create a section and remove bolt holes from section tensile area
 sec = TS.from_library("190x35")
-sec.A_t = sec.A_g - 2 * 22 * sec.b  
+sec.A_t = sec.A_g - 2 * 22 * sec.b
 
-#create a material and update properties from the section size
+# create a material and update properties from the section size
 mat = TM.from_library("MGP10")
 mat.update_from_section_size(sec.d)
 
-#create a member
+# create a member
 member = BoardMember(
-    sec=sec, 
-    mat=mat, 
-    application_cat=2, 
-    k_1=0.57,
-    high_temp_latitude=False
+    sec=sec, mat=mat, application_cat=2, k_1=0.57, high_temp_latitude=False
 )
 
-print(
-    "EG3.3(a) Design tensile capacity for permanent action case "
-    f"(k_1 = {member.k_1}), N_dt = {member.N_dt} (ANS: 14.5 kN)"
-)
+# output
+member.report(["k_1", "N_dt"])
+#(ANS: N_dt = 14.5 kN)"
+```
+The *member.report()* method is used to print a formatted report of the requested attribute names.
 
-#update the member load duration factor
+Solution 3.3(b), adding the following code:
+```
+# update member load duration factor and output
 member.update_k_1(DurationFactorStrength.FIVE_SECONDS)
-print(
-    "EG3.3(b) Design tensile capacity for wind action case "
-    f"(k_1 = {member.k_1}), N_dt = {member.N_dt} (ANS: 25.4 kN)"
-)
-print(f"k_1={DurationFactorStrength.FIVE_SECONDS}={member.k_1}")
+member.report(["k_1", "N_dt"], with_nomenclature=True, with_clause=True)
+print("(ANS: N_dt = 25.4 kN)")
 
 ```
-
+The *member.report()* function has parameters to enable additional detail in the printed report (attribute nomenclature and relevant clause(s) in AS1720.1). 
 
 ## Compression Capacity
 
 
 **TODO**
+The *member.solve_capacities()* method recalculates member capacites using the updated design parameter (g_13). 
+
+
+>*Example 4.1, Timber Design Handbook (page 235)*
+> 
+> A 2.8m long, 190 x 35 MGP10 member is to be used as an internal principal member in a Brisbane stadium. Member end connections are bolted as per Example 3.3 and there is no intermediate lateral restraint in either direction.   
+
+> (a) Evaluate the design compression capacity for a wind load combination.  
+> (b) Compare the slenderness reduction factor S3 for pinned or semi-rigid end conditions.
+
+Solution 4.1(a): 
+```
+from timberas.geometry import TimberSection as TS
+from timberas.material import TimberMaterial as TM
+from timberas.member import BoardMember, EffectiveLengthFactor
+
+#create a section and remove bolt holes from section tensile area
+sec = TS.from_library("190x35")
+
+#create a material and update properties from the section size
+mat = TM.from_library("MGP10")
+mat.update_from_section_size(sec.d)
+
+
+# assume pinned-pinned end fixity
+g_13 = EffectiveLengthFactor.PINNED_PINNED
+member.report("g_13")
+
+# create member
+member_dict = {
+    "sec": sec,
+    "mat": mat,
+    "application_cat": 2,
+    "r": 1.0,
+    "k_1": 1.0,
+    "g_13": g_13,
+    "L": 2800,
+}
+member = BoardMember(**member_dict)
+# output
+member.report(["S3", "S4", "k_12_c", "N_dcx", "N_dcy", "N_dc"])
+# (Ans: S3 = 14.7, S4 = 80, k_12_c = 0.042, N_dc = 3.54 kN)
+```
+
+
+Solution 4.1(b), adding the following code:
+
+```
+# update end fixity - assume as semi-rigid from bolt group
+print("\nEG4.1(b) Compression Capacity - bolted ends")
+member.g_13 = EffectiveLengthFactor.BOLTED_END_RESTRAINT
+# resolve member capacities
+member.solve_capacities()
+# output
+member.report(["g_13", "S3", "N_dcx"])
+#(Ans: S3 = 11.1)
+```
+
+
+## Lateral Restraint

@@ -8,6 +8,7 @@ from enum import auto, IntEnum, Enum
 from dataclasses import dataclass, field
 from timberas.material import TimberMaterial
 from timberas.geometry import TimberSection
+from timberas.utils import nomenclature_AS1720 as NOMEN
 
 
 class EffectiveLengthFactor(float, Enum):
@@ -102,7 +103,7 @@ class TimberMember:
     member_spacing: float = 0  # member spacing
 
     L: float = 1  # length
-    L_ay: float = 0
+    L_ay: float | None = None
     L_ar: float = nan  # torsional constraint, compression edge
     g_13: float = 1
     k_1: float = 1.0
@@ -112,8 +113,8 @@ class TimberMember:
     )
 
     N_dt: float = field(init=False)  # kN
-    N_cx: float = field(init=False)  # kN
-    N_cy: float = field(init=False)  # kN
+    N_dcx: float = field(init=False)  # kN
+    N_dcy: float = field(init=False)  # kN
     N_dc: float = field(init=False)  # kN
     M_d: float = field(init=False)  # kNm
     V_d: float = field(init=False)  # kNm
@@ -124,13 +125,15 @@ class TimberMember:
         self.sec_name = self.sec.name
         self.mat_name = self.mat.name
         # self.mat.update_f_t(self.sec_type, self.d)
+        if self.L_ay is None:
+            self.L_ay = self.L
         self.solve_capacities()
 
     def solve_capacities(self):
         """Calculate tension, compression, and bending design capacities."""
         self.N_dt = self._N_dt()
-        self.N_cx = self._N_cx()
-        self.N_cy = self._N_cy()
+        self.N_dcx = self._N_dcx()
+        self.N_dcy = self._N_dcy()
         self.N_dc = self._N_dc()
         self.M_d = self._M_d()
         self.V_d = self._V_d()
@@ -151,13 +154,42 @@ class TimberMember:
         self.solve_capacities()
         return self
 
+    def report(
+        self,
+        attribute_names: str | list[str],
+        report_type: str = "print",
+        with_nomenclature: bool = False,
+        with_clause: bool = False,
+    ) -> None:
+        # convert single-value attribute to list
+        if not isinstance(attribute_names, list):
+            attribute_names = [attribute_names]
+
+        if report_type == "print":
+            # print out attributes
+            for att in attribute_names:
+                if hasattr(self, att):
+                    prefix = ""
+                    if att in NOMEN:
+                        # check it attribute defined in nomenclature dictionary
+                        nom, clause = NOMEN[att]
+                        if with_nomenclature:
+                            # add nomenclature
+                            prefix = prefix + " " + nom
+                        if with_clause:
+                            # add clause
+                            prefix = prefix + " " + clause
+                    print(f"    {att}{prefix} = {getattr(self,att)}")
+                else:
+                    print(f"Unknown attribute {att}")
+
     @property
     def phi(self) -> float:
         """Table 2.1, AS1720.1:2010"""
         phi: float = self.mat.phi(self.application_cat)
         return phi
 
-    def _N_cx(self) -> float:
+    def _N_dcx(self) -> float:
         """Clause 3.3.1.1, AS1720.1:2010"""
         return (
             self.phi
@@ -170,7 +202,7 @@ class TimberMember:
             / 1000
         )
 
-    def _N_cy(self) -> float:
+    def _N_dcy(self) -> float:
         """Clause 3.3.1.1, AS1720.1:2010"""
         return (
             self.phi
@@ -185,7 +217,7 @@ class TimberMember:
 
     def _N_dc(self) -> float:
         """Clause 3.3.1.1, AS1720.1:2010"""
-        return min(self._N_cx(), self._N_cy())
+        return min(self._N_dcx(), self._N_dcy())
 
     def _N_dt(self) -> float:
         """Clause 3.4.1, AS1720.1:2010"""
