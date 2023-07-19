@@ -6,13 +6,14 @@ Python code for the following examples are available in the Github repository [[
 
 ## Capacity Factor
 
-Capacity factor phi \phi is used to calculate the design capacities of structural timber; the value of phi varies based on material type and intended member application (*application category*, ref. Table 2.1 AS1720.1).
+Capacity factor $\phi$ is used to calculate the design capacities of structural timber; the value of $\phi$ varies based on material type and intended member application (*application category*, ref. Table 2.1 AS1720.1).
+
 
 In *timberas*, capacity factors for all application categories as object attributes in the *TimberMaterial* class (*phi_1*, *phi_2*, *phi_3*). The *TimberMaterial.phi()* method is then used to select the approriate capacity factor based on an input application category. 
 
->*Example 2.11, Timber Design Handbook (page 163)*
+*Example 2.11, Timber Design Handbook (page 163)*:
 > 
-> Select the appropriate value for capacity factor phi for the following types of timber members:  
+> Select the appropriate value for capacity factor $\phi_1$ for the following types of timber members:  
 > (a) wall framing members in non-load bearing partitions, fabricated from MGP10; and  
 > (b) members in a girder truss supporting ten roof trusses, fabricated from F17 seasoned Australian hardwood.
 
@@ -41,10 +42,14 @@ Application category can be input as an integer value, or by using the *Applicat
 ## Tension Capacity
 
 
-**TODO**
- the *member.update_k_1()* method to change the load duration factor and resolve member capacities 
 
->*Example 3.3, Timber Design Handbook (page 188)*
+$$
+N_{dt} = \phi k_1 k_4 k_6 f_t A_t
+$$
+
+**TODO**
+
+*Example 3.3, Timber Design Handbook (page 188)*:
 > 
 > A 190 x 35 MGP10 member is to be used as an internal principal member in a Brisbane stadium. The member end connections introduce 2 x 22mm diameter holes through the cross-section of the member. Evaluate the design tensile capacity for:  
 > (a) a 50+ years duration load only; and  
@@ -83,7 +88,8 @@ member.report(["k_1", "N_dt"], with_nomenclature=True, with_clause=True)
 print("(ANS: N_dt = 25.4 kN)")
 
 ```
-The *member.report()* function has parameters to enable additional detail in the printed report (attribute nomenclature and relevant clause(s) in AS1720.1). 
+The *member.update_k_1()* method is used to change the load duration factor and resolve member capacities. 
+The additional parameters of the *member.report()* function are used to enable additional detail in the printed report (attribute nomenclature and relevant clause(s) in AS1720.1). 
 
 ## Compression Capacity
 
@@ -92,7 +98,7 @@ The *member.report()* function has parameters to enable additional detail in the
 The *member.solve_capacities()* method recalculates member capacites using the updated design parameter (g_13). 
 
 
->*Example 4.1, Timber Design Handbook (page 235)*
+*Example 4.1, Timber Design Handbook (page 235)*:
 > 
 > A 2.8m long, 190 x 35 MGP10 member is to be used as an internal principal member in a Brisbane stadium. Member end connections are bolted as per Example 3.3 and there is no intermediate lateral restraint in either direction.   
 
