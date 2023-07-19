@@ -12,7 +12,7 @@ Functions:
     in timberas/data/material_library.csv
 """
 from __future__ import annotations
-from importlib.resources import files
+import os
 from dataclasses import dataclass, field
 from enum import Enum
 import pandas as pd
@@ -47,7 +47,10 @@ def import_material_library() -> pd.DataFrame:
     Raises:
         FileNotFoundError: If the CSV file does not exist.
     """
-    return pd.read_csv(files("timberas.data").joinpath("material_library.csv"))
+    
+    cwd = os.path.dirname(__file__) 
+    lib_path = os.path.join(cwd, 'data/material_library.csv')
+    return pd.read_csv(lib_path)
 
 
 @dataclass(kw_only=True)
@@ -212,6 +215,7 @@ class TimberMaterial:
 def main():
     """Main Script"""
     material_library = import_material_library()
+    print(material_library)
     mgp10 = TimberMaterial.from_library("MGP10")
     mgp10 = TimberMaterial.from_library("MGP10", material_library)
     print(mgp10)

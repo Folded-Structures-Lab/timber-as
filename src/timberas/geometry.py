@@ -18,7 +18,7 @@ Functions:
 
 from __future__ import annotations
 
-from importlib.resources import files
+import os
 from dataclasses import dataclass, field
 from math import nan, isnan, floor, log10
 from enum import Enum, auto
@@ -210,8 +210,9 @@ def import_section_library() -> pd.DataFrame:
     Raises:
         FileNotFoundError: If the CSV file does not exist.
     """
-    file_name: str = str(files("timberas.data").joinpath("section_library.csv"))
-    return pd.read_csv(file_name)
+    cwd = os.path.dirname(__file__) 
+    lib_path = os.path.join(cwd, 'data/section_library.csv')
+    return pd.read_csv(lib_path)
 
 
 @dataclass

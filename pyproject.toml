@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "timberas"
+version = "0.2.0"
+authors = [
+  { name="Joe Gattas", email="j.gattas@uq.edu.au" },
+]
+description = "timberas is a Python package for the design of timber structures to relevant Australian Standards"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ["AS1170", "AS1684", "timber structures", "structural engineering"]
+dependencies = [
+    "numpy>=1.25.0",
+    "pandas>=2.0.2"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Folded-Structures-Lab/timber-as"
+
