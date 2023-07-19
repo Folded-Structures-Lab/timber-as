@@ -202,7 +202,7 @@ def import_section_library() -> pd.DataFrame:
     """
     Imports a section library from a CSV file.
 
-    The CSV file is located at 'timberas.data/section_library.csv'.
+    The CSV file is located at 'timberas/data/section_library.csv'.
 
     Returns:
         pd.DataFrame: A DataFrame containing the contents of the section library CSV file.

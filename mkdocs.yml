@@ -31,8 +31,9 @@ nav:
     - About: index.md
     - Installation: install.md
   - Tutorials: 
-    - Getting Started I: tutorial-1.md
-    - Getting Started II: tutorial-2.md
+    - Quick Start: tutorial-1.md
+    - Sections and Materials: tutorial-2.md
+    - Members and Capacities: tutorial-3.md
   - Technical:
     - API Reference: reference.md
 
