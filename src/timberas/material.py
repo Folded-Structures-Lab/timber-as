@@ -1,6 +1,6 @@
 """
-This module provides classes and functions for creating representing timber materials 
-based on AS1720. 
+This module provides classes and functions for creating timber materials 
+described in AS1720.1. 
 
 Classes:
     GradeType: Enum class defining material grade string constants. 
