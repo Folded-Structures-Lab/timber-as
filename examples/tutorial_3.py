@@ -1,69 +1,76 @@
-# import material
-from timberas.member import ApplicationCategory
-from timberas.member import EffectiveLengthFactor
-from timberas.member import BoardMember
 from timberas.geometry import TimberSection, ShapeType
-from timberas.material import import_material_library, TimberMaterial
+from timberas.material import TimberMaterial
+from timberas.member import BoardMember, ApplicationCategory, EffectiveLengthFactor, DurationFactorStrength
+
+#########################
+# Capacity Factor
+# Example 2.11, pg 163
+# Timber Design Handbook 
+#########################
+
+print("\n Timber Design Handbook  EG2.11 Capacity Factors")
+
+#specify application category as integer 1, 2, or 3
+material_a = TimberMaterial.from_library("MGP10")
+application_category = 1
+phi = material_a.phi(application_category)
+print(f"Example 2.11(a) Solution MGP10 Frames phi = {phi} (ANS: 0.9)")
+
+#or, specify application category from ApplicationCategory enum
+material_b = TimberMaterial.from_library("F17 Seasoned Hardwood")
+application_category = ApplicationCategory.GREATER_THAN_25_SQM
+phi = material_b.phi(application_category)
+print(f"Example 2.11(b) Solution Hardwood Trusses phi = {phi} (ANS=0.85)")
+print(f"Application Category value = {application_category.value}")
 
 
-# import material from the default library
-MATERIAL_LIBRARY = import_material_library()
-MGP12 = TimberMaterial.from_library("MGP12", MATERIAL_LIBRARY)
-print(MGP12)
-
-# default library is also used if none is provided otherwise
-F8 = TimberMaterial.from_library("F8 Unseasoned Softwood")
-print(F8)
-
-
-# make stud
-stud_dict = {
-    "name": "1/90x45",
-    "shape_type": ShapeType.SINGLE_BOARD,
-    "n": 1,
-    "b": 45,
-    "d": 90,
-}
-stud = TimberSection(**stud_dict)
-print(stud)
-
-
-# EXAMPLE 2.11, Capacity Factor, pg ...
-MGP10 = TimberMaterial.from_library("MGP10")
-tm = BoardMember(sec=stud, mat=MGP10, application_cat=1)
-
-print("\n EG2.11 Capacity Factors")
-print(f"Example 2.11 Solution MGP10 Frames {tm.phi}=0.9")
-
-F17_Hardwood = TimberMaterial.from_library("F17 Seasoned Hardwood")
-tm = BoardMember(sec=stud, mat=F17_Hardwood, application_cat=2)
-
-print(f"Example 2.11 Solution Hardwood Trusses {tm.phi}=0.85")
-
+#########################
+# Tensile Capacity
+# Example 3.3, pg 188
+# Timber Design Handbook 
+#########################
 TM = TimberMaterial
 TS = TimberSection
 
+print("\n EG3.3 Tensile Capacity")
 
-# EXAMPLE 3.3 Tensile Capacity
+#create a section and remove bolt holes from section tensile area
 sec = TS.from_library("190x35")
-sec.A_t = sec.A_g - 2 * 22 * sec.b  # remove bolt holes
+sec.A_t = sec.A_g - 2 * 22 * sec.b  
+
+#create a material and update properties from the section size
 mat = TM.from_library("MGP10")
 mat.update_from_section_size(sec.d)
-member = BoardMember(sec=sec, mat=mat, application_cat=2, high_temp_latitude=False)
 
-print("\n EG3.3 Tensile Capacity")
+#create a member
+member = BoardMember(
+    sec=sec, 
+    mat=mat, 
+    application_cat=2, 
+    k_1=0.57,
+    high_temp_latitude=False
+)
 print(
-    f"EG3.3(a) Design tensile capacity for wind action case\
-        (k_1 = {member.k_1}), N_dt = {member.N_dt} (ANS: 25.4 kN)"
+    "EG3.3(a) Design tensile capacity for permanent action case "
+    f"(k_1 = {member.k_1}), N_dt = {member.N_dt} (ANS: 14.5 kN)"
 )
 
-member.update_k_1(0.57)
+#update the member load duration factor
+member.update_k_1(DurationFactorStrength.FIVE_SECONDS)
 print(
-    f"EG3.3(b) Design tensile capacity for wind action case\
-        (k_1 = {member.k_1}), N_dt = {member.N_dt} (ANS: 14.5 kN)"
+    "EG3.3(b) Design tensile capacity for wind action case "
+    f"(k_1 = {member.k_1}), N_dt = {member.N_dt} (ANS: 25.4 kN)"
 )
+print(f"k_1={DurationFactorStrength.FIVE_SECONDS}={member.k_1}")
 
-# EXAMPLE 4.1 Compression Capacity
+
+#########################
+# Compressive Capacity
+# Example 4.1, pg 235
+# Timber Design Handbook 
+#########################
+
+
 g_13 = EffectiveLengthFactor.PINNED_PINNED
 member_dict = {
     "sec": sec,

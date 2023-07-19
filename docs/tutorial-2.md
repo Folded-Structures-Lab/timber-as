@@ -76,7 +76,7 @@ Solution using *timberas*:
 from timberas.geometry import TimberSection, ShapeType
 from timberas.material import TimberMaterial
 
-#EG 3.1(1)
+#EG 3.1(a)
 sec = TimberSection.from_library("240x45")
 mat = TimberMaterial.from_library("MGP12")
 mat.update_from_section_size(sec.d)
