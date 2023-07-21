@@ -70,16 +70,21 @@ member_dict = {
 }
 member = BoardMember(**member_dict)
 # output
-member.report(["S3", "S4", "k_12_c", "N_dcx", "N_dcy", "N_dc"])
+member.report(["g_13", "N_dcx", "N_dcy"])
+member.report(["S3", "S4", "k_12_c", "N_dc"])
 print("(ANS: S3 = 14.7, S4 = 80, k_12_c = 0.042, N_dc = 3.54 kN")
+
 
 # update end fixity - assume as semi-rigid from bolt group
 print("\nEG4.1(b) Compression Capacity - bolted ends")
-member.g_13 = EffectiveLengthFactor.BOLTED_END_RESTRAINT
+member.g_13 = {
+    "x": EffectiveLengthFactor.BOLTED_END_RESTRAINT,
+    "y": EffectiveLengthFactor.PINNED_PINNED,
+}
 # resolve member capacities
 member.solve_capacities()
 # output
-member.report(["g_13", "S3", "N_dcx"], with_nomenclature=False)
+member.report(["g_13", "S3", "N_dcx", "S4", "N_dcy"], with_nomenclature=False)
 print("(ANS S3 = 11.1)")
 
 

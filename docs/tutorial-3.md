@@ -110,8 +110,17 @@ The additional parameters of the *member.report()* function are used to enable a
 
 The design compression capacity of timber member (parallel to grain) as per AS1720.1 Clause 3.3.1 is:
 $$
-N_{dc} = \phi k_1 k_4 k_6 k_{12} f_c A_c
+N_{d,c} = \phi k_1 k_4 k_6 k_{12} f_c A_c
 $$
+
+The stability factor $k_{12}$ (Ref. Cl 3.3.3) accounts for the potential of buckling failure about $x$ or $y$ axes. Thus, *timberas* evaluates stability and compressive capacity about both axes, using then then minimum as the governing design compressive capacity:
+$$
+N_{d,cx} = \phi k_1 k_4 k_6 k_{12,x} f_c A_c
+$$
+$$
+N_{d,cy} = \phi k_1 k_4 k_6 k_{12,y} f_c A_c
+$$
+
 Input and evaluation of compression design parameters using *timberas* is detailed further with reference to the following example.
 
 
@@ -150,39 +159,37 @@ member_dict = {
 }
 member = BoardMember(**member_dict)
 # output
-member.report(["S3", "S4", "k_12_c", "N_dcx", "N_dcy", "N_dc"])
+member.report(["g_13", "N_dcx", "N_dcy"])
+member.report(["S3", "S4", "k_12_c", "N_dc"])
 # (Ans: S3 = 14.7, S4 = 80, k_12_c = 0.042, N_dc = 3.54 kN)
-
-#b) update end fixity - assume as semi-rigid from bolt group
-print("\nEG4.1(b) Compression Capacity - bolted ends")
-member.g_13 = EffectiveLengthFactor.BOLTED_END_RESTRAINT
-# resolve member capacities
-member.solve_capacities()
-# output
-member.report(["g_13", "S3", "N_dcx"])
-#(Ans: S3 = 11.1)
 ```
 
-Compression design parameters are derived from these inputs as follows:
+Compression design parameters are derived from member inputs as follows:
+
 - $\phi$, $k_1$, $k_4$, $k_6$ as described above for tension capacity.
 - Cross-sectional column area $A_c$ is a *TimberSection* attribute. It is calculated initially as equal to gross area $A_g$, but can be updated by user input.  
 - Characteristic tensile strength $f_c$ is a *TimberMaterial* attribute.
+-  Stability factors for x-axis *k_12_x* and y-axis *k_12_y* buckling are derived from:
+    - Material constant $\rho_C$ - requires a load-dependent ratio parameter $r$ (temporary design action / permanent design action).
+    - Slenderness coefficients for x-axis *S_3* and y-axis *S_4* - requires member length *L* and effective length factor *g_13*. 
+    - Intermediate lateral restraint will be discussed in the next section.
 
+The effective length factor can be input as a numerical value, or using the *EffectiveLengthFactor* enum class, which includes factors for end restraint conditions listed in AS1720.1 Table 3.2. 
 
-Stability factor $k_{12}$ *TODO*
-
-
-
-The *member.solve_capacities()* method recalculates member capacites using the updated design parameter (g_13). 
-
-
-
-
-Solution 4.1(b), adding the following code:
-
+Effective length factors can also be input for both x and y directions using a dictionary input for *g_13*. For example, extending the above code for Solution 4.1(b):
 ```
-
+#b) update end fixity - assume as semi-rigid from bolt group
+member.g_13 = {
+    "x": EffectiveLengthFactor.BOLTED_END_RESTRAINT,
+    "y": EffectiveLengthFactor.PINNED_PINNED,
+}
+# resolve member capacities
+member.solve_capacities()
+# output
+member.report(["g_13", "S3", "N_dcx", "S4", "N_dcy"], with_nomenclature=False)
+print("(ANS S3 = 11.1)")
 ```
+The *member.solve_capacities()* method recalculates member capacites using the updated effective length factor. 
 
 
 ## Lateral Restraint

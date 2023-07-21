@@ -136,7 +136,7 @@ print(f"Example 2.11(b) Solution Hardwood Trusses phi = {phi} (ANS=0.85)")
 print(f"Application Category value = {application_category.value}")
 ```
 
-Application category can be input as an integer value, or by using the *ApplicationCategory* enum class, which includes member applications listed in AS1720.1 Table 2.1 and their corresponding application category number.
+Application category can be input as an integer value, or by using the *ApplicationCategory* enum class, which includes member applications listed in AS1720.1 Table 2.1.
 
 
 

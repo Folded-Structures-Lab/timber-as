@@ -25,7 +25,7 @@
 - nominal vs actual section sizes
 
 ### member.py
-- g_13 different inputs for x-axis and y-axis compressive buckling?
+- L_a different inputs for x-axis and y-axis compressive buckling?
 
 ### AS1684 loadings
 - clean up code, change from functions to classes

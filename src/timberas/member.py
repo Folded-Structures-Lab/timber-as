@@ -105,7 +105,7 @@ class TimberMember:
     L: float = 1  # length
     L_ay: float | None = None
     L_ar: float = nan  # torsional constraint, compression edge
-    g_13: float = 1
+    g_13: float | dict = 1
     k_1: float = 1.0
     r: float = 0.25  # ratio of temporary to total design action effect
     restraint: str | BendingRestraint = (
@@ -170,12 +170,12 @@ class TimberMember:
         if report_type == "print":
             # print out attributes
             for att in attribute_names:
-                #get attribute val from self, self.sec, or self.mat
+                # get attribute val from self, self.sec, or self.mat
                 att_val = None
                 if hasattr(self, att):
-                    att_val = getattr(self,att)
+                    att_val = getattr(self, att)
                 elif hasattr(self.mat, att):
-                    att_val = getattr(self.mat,att)
+                    att_val = getattr(self.mat, att)
                 elif hasattr(self.sec, att):
                     att_val = getattr(self.sec, att)
                 if att_val is not None:
@@ -283,7 +283,7 @@ class TimberMember:
 
     @property
     def S3(self) -> float:
-        """Slenderness coefficient for lateral buckling under compression, major axis.
+        """Slenderness coefficient for lateral buckling under compression, x axis.
         Clause 3.3.2, AS1720.1:2010. Not implemented in TimberMember parent class, added in
         child classes."""
         raise NotImplementedError
@@ -293,7 +293,7 @@ class TimberMember:
         """Clause 3.3.2.2(b), AS1720.1:2010"""
         # NOTE: b_i or b? valid for other cases?
         calc_1 = self.L_ay / self.sec.b
-        calc_2 = self.g_13 * self.L / (self.sec.b)
+        calc_2 = self.g_13_y * self.L / (self.sec.b)
         return round(min(calc_1, calc_2), 2)
 
     @property
@@ -306,6 +306,34 @@ class TimberMember:
         else:
             rho = 9.29 * (self.mat.E / self.mat.f_c) ** (-0.367) * r ** (-0.146)
         return rho
+
+    @property
+    def g_13_x(self) -> float:
+        """Effective length factor for compressive buckling, x-axis"""
+        # g_13 is float - use in x and y axes
+        if isinstance(self.g_13, float | int):
+            return self.g_13
+        # else g_13 is dictionary - use x axis key value only
+        if "x" in self.g_13:
+            return self.g_13["x"]
+        # raise error if not yet returned
+        raise KeyError(
+            "effective length factor g_13 not defined for x-axis compressive buckling"
+        )
+
+    @property
+    def g_13_y(self) -> float:
+        """Effective length factor for compressive buckling, y-axis"""
+        # g_13 is float - use in x and y axes
+        if isinstance(self.g_13, float | int):
+            return self.g_13
+        # else g_13 is dictionary - use y axis key value only
+        if "y" in self.g_13:
+            return self.g_13["y"]
+        # raise error if not yet returned
+        raise KeyError(
+            "effective length factor g_13 not defined for y-axis compressive buckling"
+        )
 
     @property
     def rho_b(self) -> float:
@@ -436,9 +464,9 @@ class BoardMember(TimberMember):
 
     @property
     def S3(self) -> float:
-        """Slenderness coefficient for buckling about major axis in rectangular sections.
+        """Slenderness coefficient for buckling about x axis in rectangular sections.
         Clause 3.3.2.2(a), AS1720.1:2010."""
-        return round(self.g_13 * self.L / self.sec.d, 2)
+        return round(self.g_13_x * self.L / self.sec.d, 2)
 
     @property
     def k_9(self) -> float:
