@@ -72,7 +72,7 @@ member = BoardMember(**member_dict)
 # output
 member.report(["g_13", "N_dcx", "N_dcy"])
 member.report(["S3", "S4", "k_12_c", "N_dc"])
-print("(ANS: S3 = 14.7, S4 = 80, k_12_c = 0.042, N_dc = 3.54 kN")
+print("(ANS: S3 = 14.7, S4 = 80, k_12_c = 0.042, N_dc = 3.54 kN)")
 
 
 # update end fixity - assume as semi-rigid from bolt group
@@ -94,11 +94,13 @@ print("(ANS S3 = 11.1)")
 # Timber Design Handbook
 ##############################################
 
+print("")
+print("EG4.3 Timber Stud Wall Design")
+
 # Example 4.3 Stud Wall
-mat = TM.from_library("F7 Unseasoned Softwood")
 member_dict = {
-    "sec": TS(d=147, b=47, name="147x47", shape_type=ShapeType.SINGLE_BOARD),
-    "mat": mat,
+    "sec": TS(d=147, b=47, name="Nominal 150 x 50", shape_type=ShapeType.SINGLE_BOARD),
+    "mat": TM.from_library("F7 Unseasoned Softwood"),
     "application_cat": ApplicationCategory.SECONDARY_MEMBER,
     "high_temp_latitude": False,
     "consider_partial_seasoning": True,
@@ -106,30 +108,16 @@ member_dict = {
     "r": 0,
     "g_13": EffectiveLengthFactor.FRAMING_STUDS,
     "L": 3300,
-    "L_ay": 1650,
+    "L_a": {"x": None, "y": 1650},
 }
 member = BoardMember(**member_dict)
+member.report(["L_ax", "L_ay"])
+member.report(["S3", "S4", "k_12_c", "N_dc", "N_dcx", "N_dcy"])
+# ANS: S3 = 20.1, S4 = 35.1, k_12_c = 0.139, N_dc = 7.05 kN
 
-print("\n EG4.3 Timber Stud Wall Design")
-print(f"EG4.3(a) Slenderness factor major axis buckling  S3 = {member.S3} (ANS: 20.1)")
-print(f"EG4.3(a) Slenderness factor minor axis buckling S4 = {member.S4} (ANS: 35.1)")
-print(f"EG4.3(a) Stability factor k12 = {member.k_12_c} (ANS: 0.139)")
-
-print(f"EG4.3(a) Design compression capacity N_dc = {member.N_dc} (ANS: 7.05 kN)")
-
-# Example 4.4 Stud Wall Design Change
-member_dict["L_ay"] = 1100
-member = BoardMember(**member_dict)
-
-print(
-    "\n EG4.4 Timber Stud Wall Modification - increase capacity from \
-      additional lateral restraint L_ay = 1100 mm"
-)
-print(
-    f"EG4.4  Check design compression capacity for major axis buckling \
-        N_cx = {member.N_dcx} (ANS: 21.3 kN)"
-)
-print(
-    f"EG4.4  Check design compression capacity for minor axis bukcling \
-        N_cy = {member.N_dcy} (ANS: 15.9 kN)"
-)
+# b) increase capacity from additional lateral restraint L_ay = 1100 mm
+member.L_a = {"x": None, "y": 1100}
+member.solve_capacities()
+member.report(["L_ax", "L_ay"])
+member.report(["N_dcx", "N_dcy", "N_dc"])
+# ANS: N_dcx = 21.3, N_dcy = 15.9

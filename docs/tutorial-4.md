@@ -1,0 +1,3 @@
+
+
+# Bending and Shear Capacity

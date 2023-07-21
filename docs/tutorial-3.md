@@ -193,3 +193,48 @@ The *member.solve_capacities()* method recalculates member capacites using the u
 
 
 ## Lateral Restraint
+
+
+
+*Example 4.3, Timber Design Handbook (page 255)*:
+> 
+> Evaluate the design compression capacity of stud elements in a load-bearing timber stud wall, 
+> for a governing self-weight (long-term duration) load-case. Studs are 150 x 50 unseasoned F7 
+> timber and 3.3m high. Assume noggins are placed to provide lateral restraint:
+> 
+> (a) at mid-height; or  
+> (b) at one-third and two-third height.
+
+
+Solution 4.3:
+```
+from timberas.geometry import TimberSection as TS, ShapeType
+from timberas.material import TimberMaterial as TM
+from timberas.member import BoardMember, ApplicationCategory, EffectiveLengthFactor
+
+#a) stud wall, 1650mm noggins
+member_dict = {
+    "sec": TS(d=147, b=47, name="Nominal 150 x 50", shape_type=ShapeType.SINGLE_BOARD),
+    "mat": TM.from_library("F7 Unseasoned Softwood"),
+    "application_cat": ApplicationCategory.SECONDARY_MEMBER,
+    "high_temp_latitude": False,
+    "consider_partial_seasoning": True,
+    "k_1": 0.57,
+    "r": 0,
+    "g_13": EffectiveLengthFactor.FRAMING_STUDS,
+    "L": 3300,
+    "L_a": {"x": None, "y": 1650},
+}
+member = BoardMember(**member_dict)
+member.report(["L_ax", "L_ay"])
+member.report(["S3", "S4", "k_12_c", "N_dc", "N_dcx", "N_dcy"])
+print("(ANS: S3 = 20.1, S4 = 35.1, k_12_c = 0.139, N_dc = 7.05 kN)")
+
+#b) increase capacity from additional lateral restraint L_ay = 1100 mm
+member.L_a = {"x": None, "y": 1100}
+member.solve_capacities()
+member.report(["L_ax", "L_ay"])
+member.report(["N_dcx", "N_dcy", "N_dc"])
+print("(ANS: N_dcx = 21.3, N_dcy = 15.9)")
+
+```

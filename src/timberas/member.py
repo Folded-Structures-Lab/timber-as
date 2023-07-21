@@ -103,7 +103,7 @@ class TimberMember:
     member_spacing: float = 0  # member spacing
 
     L: float = 1  # length
-    L_ay: float | None = None
+    L_a: float | dict | None = None
     L_ar: float = nan  # torsional constraint, compression edge
     g_13: float | dict = 1
     k_1: float = 1.0
@@ -125,8 +125,6 @@ class TimberMember:
         self.sec_name = self.sec.name
         self.mat_name = self.mat.name
         # self.mat.update_f_t(self.sec_type, self.d)
-        if self.L_ay is None:
-            self.L_ay = self.L
         self.solve_capacities()
 
     def solve_capacities(self):
@@ -334,6 +332,36 @@ class TimberMember:
         raise KeyError(
             "effective length factor g_13 not defined for y-axis compressive buckling"
         )
+
+    @property
+    def L_ax(self) -> float:
+        """distance between effective lateral restraint against buckling about x-axis."""
+        if isinstance(self.L_a, float | int) or (self.L_a is None):
+            l_ax = self.L_a
+        elif isinstance(self.L_a, dict) and "x" in self.L_a:
+            l_ax = self.L_a["x"]
+        else:  # raise error if not yet returned
+            raise KeyError(
+                "lateral restraint for x-axis compressive buckling L_ax not defined"
+            )
+        if l_ax is None:
+            l_ax = self.L
+        return l_ax
+
+    @property
+    def L_ay(self) -> float:
+        """distance between effective lateral restraint against buckling about y-axis."""
+        if isinstance(self.L_a, float | int) or (self.L_a is None):
+            l_ay = self.L_a
+        elif isinstance(self.L_a, dict) and "y" in self.L_a:
+            l_ay = self.L_a["y"]
+        else:  # raise error if not yet returned
+            raise KeyError(
+                "lateral restraint for y-axis compressive buckling L_ay not defined"
+            )
+        if l_ay is None:
+            l_ay = self.L
+        return l_ay
 
     @property
     def rho_b(self) -> float:
