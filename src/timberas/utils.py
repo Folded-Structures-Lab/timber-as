@@ -1,7 +1,7 @@
 nomenclature_AS1720 = {
     "k_1": ("Load duration factor", "(Cl 2.4.1.1, Appendix G)"),
     "k_4": ("In-service moisture change factor", "(Cl 2.4.2)"),
-    "k_6": ("Temperature/humidity effectfactor", "(Cl 2.4.3)"),
+    "k_6": ("Temperature/humidity effect factor", "(Cl 2.4.3)"),
     "k_7": ("Bearing length factor", "(Cl 2.4.4)"),
     "k_9": ("Load sharing in grid systems factor", "(Cl 2.4.5)"),
     # "k11": "effect of volume, in tension perpendicular to grain	(Cl 3.4.2)",

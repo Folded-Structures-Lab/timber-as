@@ -60,7 +60,7 @@ material.update_from_section_size(240)
 print(f"Modified material strengths: {material.f_b}, {material.f_t}")
 ```
 
-## Timber Handbook Examples
+## Timber Handbook Example
 The following example is sourced from the *Timber Design Handbook* ([Standards Australia HB 108 - 2013](https://infostore.saiglobal.com/en-us/standards/sa-hb-108-2013-119982_saig_as_as_251451/)), written by Geoffrey Boughton and Keith Crews. This handbook provides detailed guidance and additional information on the design of Australian timber structures. 
 
 >*Example 3.1, Timber Design Handbook (page 177)*
@@ -101,5 +101,42 @@ mat.update_from_section_size(sec.d)
 print(f"EG3.1(d) 90 x 35 MGP10 f_t = {mat.f_t} (ANS: 7.7 MPa)")
 
 ```
+
+
+## Capacity Factor
+
+Capacity factor $\phi$ is used to calculate the design capacities of structural timber; the value of $\phi$ varies based on material type and intended member application (*application category*, ref. Table 2.1 AS1720.1).
+
+
+In *timberas*, capacity factors for all application categories as object attributes in the *TimberMaterial* class (*phi_1*, *phi_2*, *phi_3*). The *TimberMaterial.phi()* method is then used to select the approriate capacity factor based on an input application category. 
+
+*Example 2.11, Timber Design Handbook (page 163)*:
+> 
+> Select the appropriate value for capacity factor $\phi_1$ for the following types of timber members:  
+> (a) wall framing members in non-load bearing partitions, fabricated from MGP10; and  
+> (b) members in a girder truss supporting ten roof trusses, fabricated from F17 seasoned Australian hardwood.
+
+
+Solution: 
+```
+from timberas.material import TimberMaterial
+from timberas.member import ApplicationCategory
+
+#specify application category as integer 1, 2, or 3
+material_a = TimberMaterial.from_library("MGP10")
+application_category = 1
+phi = material_a.phi(application_category)
+print(f"Example 2.11(a) Solution MGP10 Frames phi = {phi} (ANS: 0.9)")
+
+#or, specify application category from ApplicationCategory constants
+material_b = TimberMaterial.from_library("F17 Seasoned Hardwood")
+application_category = ApplicationCategory.GREATER_THAN_25_SQM
+phi = material_b.phi(application_category)
+print(f"Example 2.11(b) Solution Hardwood Trusses phi = {phi} (ANS=0.85)")
+print(f"Application Category value = {application_category.value}")
+```
+
+Application category can be input as an integer value, or by using the *ApplicationCategory* enum class, which includes member applications listed in AS1720.1 Table 2.1 and their corresponding application category number.
+
 
 

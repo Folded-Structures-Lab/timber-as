@@ -7,27 +7,6 @@ from timberas.member import (
     DurationFactorStrength,
 )
 
-#########################
-# Capacity Factor
-# Example 2.11, pg 163
-# Timber Design Handbook
-#########################
-
-print("\n Timber Design Handbook  EG2.11 Capacity Factors")
-
-# specify application category as integer 1, 2, or 3
-material_a = TimberMaterial.from_library("MGP10")
-application_category = 1
-phi = material_a.phi(application_category)
-print(f"Example 2.11(a) Solution MGP10 Frames phi = {phi} (ANS: 0.9)")
-
-# or, specify application category from ApplicationCategory enum
-material_b = TimberMaterial.from_library("F17 Seasoned Hardwood")
-application_category = ApplicationCategory.GREATER_THAN_25_SQM
-phi = material_b.phi(application_category)
-print(f"Example 2.11(b) Solution Hardwood Trusses phi = {phi} (ANS=0.85)")
-print(f"Application Category value = {application_category.value}")
-
 
 #########################
 # Tensile Capacity
@@ -43,10 +22,12 @@ print("EG3.3(a) Design tensile capacity for permanent action case ")
 # create a section and remove bolt holes from section tensile area
 sec = TS.from_library("190x35")
 sec.A_t = sec.A_g - 2 * 22 * sec.b
+print(sec.A_t)
 
 # create a material and update properties from the section size
 mat = TM.from_library("MGP10")
 mat.update_from_section_size(sec.d)
+print(mat.f_t)
 
 # create a member
 member = BoardMember(
@@ -76,7 +57,6 @@ print("EG4.1(a) Compression Capacity - pinned-pinned ends")
 
 # assume pinned-pinned end fixity
 g_13 = EffectiveLengthFactor.PINNED_PINNED
-member.report("g_13")
 
 # create member
 member_dict = {

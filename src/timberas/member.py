@@ -156,19 +156,29 @@ class TimberMember:
 
     def report(
         self,
-        attribute_names: str | list[str],
+        attribute_names: str | list[str] | None = None,
         report_type: str = "print",
         with_nomenclature: bool = False,
         with_clause: bool = False,
     ) -> None:
         # convert single-value attribute to list
+        if attribute_names is None:
+            attribute_names = list(self.__annotations__.keys())
         if not isinstance(attribute_names, list):
             attribute_names = [attribute_names]
 
         if report_type == "print":
             # print out attributes
             for att in attribute_names:
+                #get attribute val from self, self.sec, or self.mat
+                att_val = None
                 if hasattr(self, att):
+                    att_val = getattr(self,att)
+                elif hasattr(self.mat, att):
+                    att_val = getattr(self.mat,att)
+                elif hasattr(self.sec, att):
+                    att_val = getattr(self.sec, att)
+                if att_val is not None:
                     prefix = ""
                     if att in NOMEN:
                         # check it attribute defined in nomenclature dictionary
@@ -179,7 +189,7 @@ class TimberMember:
                         if with_clause:
                             # add clause
                             prefix = prefix + " " + clause
-                    print(f"    {att}{prefix} = {getattr(self,att)}")
+                    print(f"    {att}{prefix} = {att_val}")
                 else:
                     print(f"Unknown attribute {att}")
 
