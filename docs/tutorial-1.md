@@ -1,7 +1,7 @@
 
 # Quick Start
 
-Python code for the following examples are available in the Github repository [example folder](https://github.com/Folded-Structures-Lab/timber-as/tree/main/examples/tutorial_1.py). 
+Python code for the following examples are available in the Github repository [examples folder](https://github.com/Folded-Structures-Lab/timber-as/tree/main/examples/tutorial_1.py). 
 
 *timberas* can be used to determine the material properties, section properties, and design capacities for structural members as per Australian Standard AS1720.1:2020 (Timber Structures Part 1: Design Methods).
 

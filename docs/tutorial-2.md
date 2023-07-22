@@ -1,7 +1,7 @@
 
 # Sections and Materials
 
-Python code for the following examples are available in the Github repository [example folder](https://github.com/Folded-Structures-Lab/timber-as/tree/main/examples/tutorial_2.py). 
+Python code for the following examples are available in the Github repository [examples folder](https://github.com/Folded-Structures-Lab/timber-as/tree/main/examples/tutorial_2.py). 
 
 ## Define a timber section
 *timberas* creates a structural section property using the *TimberSection* class in the *geometry* module. A TimberSection can be imported from a library of 'standard' Australian timber section sizes [(link here)](https://github.com/Folded-Structures-Lab/timber-as/blob/main/src/timberas/data/section_library.csv) using the below code. Section properties can be accessed as attributes of the created section. 
@@ -108,7 +108,7 @@ print(f"EG3.1(d) 90 x 35 MGP10 f_t = {mat.f_t} (ANS: 7.7 MPa)")
 Capacity factor $\phi$ is used to calculate the design capacities of structural timber; the value of $\phi$ varies based on material type and intended member application (*application category*, ref. Table 2.1 AS1720.1).
 
 
-In *timberas*, capacity factors for all application categories as object attributes in the *TimberMaterial* class (*phi_1*, *phi_2*, *phi_3*). The *TimberMaterial.phi()* method is then used to select the approriate capacity factor based on an input application category. 
+In *timberas*, capacity factors for all application categories as object attributes in the *TimberMaterial* class (*phi_1*, *phi_2*, *phi_3*). The *TimberMaterial.phi()* method is then used to select the appropriate capacity factor based on an input application category. 
 
 *Example 2.11, Timber Design Handbook (page 163)*:
 > 

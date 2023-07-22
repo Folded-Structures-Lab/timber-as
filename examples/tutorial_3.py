@@ -95,7 +95,7 @@ print("(ANS S3 = 11.1)")
 ##############################################
 
 print("")
-print("EG4.3 Timber Stud Wall Design")
+print("EG4.3a Timber Stud Wall Design  - L_ay=1650mm")
 
 # Example 4.3 Stud Wall
 member_dict = {
@@ -111,13 +111,14 @@ member_dict = {
     "L_a": {"x": None, "y": 1650},
 }
 member = BoardMember(**member_dict)
-member.report(["L_ax", "L_ay"])
+member.report(["L_ax", "L_ay", "k_4"])
 member.report(["S3", "S4", "k_12_c", "N_dc", "N_dcx", "N_dcy"])
-# ANS: S3 = 20.1, S4 = 35.1, k_12_c = 0.139, N_dc = 7.05 kN
+print("ANS: S3 = 20.1, S4 = 35.1, k_12_c = 0.139, N_dc = 7.05 kN")
 
 # b) increase capacity from additional lateral restraint L_ay = 1100 mm
+print("\nEG4.3b Timber Stud Wall Design - L_ay=1100mm")
 member.L_a = {"x": None, "y": 1100}
 member.solve_capacities()
 member.report(["L_ax", "L_ay"])
 member.report(["N_dcx", "N_dcy", "N_dc"])
-# ANS: N_dcx = 21.3, N_dcy = 15.9
+print("ANS: N_dcx = 21.3, N_dcy = 15.9")

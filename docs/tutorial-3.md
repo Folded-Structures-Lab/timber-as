@@ -1,7 +1,7 @@
 
 # Tension and Compression Capacity
 
-Python code for the following examples are available in the Github repository [[example folder]](https://github.com/Folded-Structures-Lab/timber-as/tree/main/examples/tutorial_3.py). Several examples on this page are sourced from the *Timber Design Handbook* ([Standards Australia HB 108 - 2013](https://infostore.saiglobal.com/en-us/standards/sa-hb-108-2013-119982_saig_as_as_251451/)), written by Geoffrey Boughton and Keith Crews.
+Python code for the following examples are available in the Github repository [examples folder](https://github.com/Folded-Structures-Lab/timber-as/tree/main/examples/tutorial_3.py). Several examples on this page are sourced from the *Timber Design Handbook* ([Standards Australia HB 108 - 2013](https://infostore.saiglobal.com/en-us/standards/sa-hb-108-2013-119982_saig_as_as_251451/)), written by Geoffrey Boughton and Keith Crews.
 
 
 ## Member Design Capacities
@@ -84,7 +84,7 @@ member = BoardMember(
     high_temp_latitude=False
 )
 ```
-Remainining tension design parameters are derived from these inputs as follows:
+Remaining tension design parameters are derived from these inputs as follows:
 
 - Capacity factor $\phi$ is evaluated from the application category (*application_cat*) parameter and material, as discussed above. 
 - Load duration factor $k_1$ (Ref. Cl 2.4.1.1) is input directly. 
@@ -187,14 +187,14 @@ member.g_13 = {
 member.solve_capacities()
 # output
 member.report(["g_13", "S3", "N_dcx", "S4", "N_dcy"], with_nomenclature=False)
-print("(ANS S3 = 11.1)")
+#(ANS S3 = 11.1)
 ```
-The *member.solve_capacities()* method recalculates member capacites using the updated effective length factor. 
+The *member.solve_capacities()* method recalculates member capacities using the updated effective length factor. 
 
 
 ## Lateral Restraint
 
-
+The following example is used to show further detail *timberas* usage for unseasoned member capacity evaluation and specification of lateral restraint against compressive buckling.
 
 *Example 4.3, Timber Design Handbook (page 255)*:
 > 
@@ -226,15 +226,31 @@ member_dict = {
     "L_a": {"x": None, "y": 1650},
 }
 member = BoardMember(**member_dict)
-member.report(["L_ax", "L_ay"])
+member.report(["L_ax", "L_ay", "k_4])
 member.report(["S3", "S4", "k_12_c", "N_dc", "N_dcx", "N_dcy"])
-print("(ANS: S3 = 20.1, S4 = 35.1, k_12_c = 0.139, N_dc = 7.05 kN)")
+#(ANS: S3 = 20.1, S4 = 35.1, k_12_c = 0.139, N_dc = 7.05 kN)
 
 #b) increase capacity from additional lateral restraint L_ay = 1100 mm
 member.L_a = {"x": None, "y": 1100}
 member.solve_capacities()
 member.report(["L_ax", "L_ay"])
 member.report(["N_dcx", "N_dcy", "N_dc"])
-print("(ANS: N_dcx = 21.3, N_dcy = 15.9)")
+#(ANS: N_dcx = 21.3, N_dcy = 15.9)
 
 ```
+
+As the section will be used with an unseasoned material, minimum tolerance dimensions are used for creating the section property, rather than nominal dimensions:
+```
+"sec": TS(d=147, b=47, name="Nominal 150 x 50", shape_type=ShapeType.SINGLE_BOARD)
+```
+
+The partial seasoning factor $k_4$ becomes a relevant consideration for unseasoned timber. The *consider_partial_seasoning* parameter is used to including partial seasoning ($k_4 \geq 1.0) in member capacity evaluation:
+```
+"consider_partial_seasoning": True
+```
+
+The effective buckling length of compressive elements may be reduced with use of rigid restraints against lateral movement. Distance between lateral restraints is input with the *L_a* parameter:
+```
+"L_a": {"x": None, "y": 1650}
+```
+The input is a dictionary with values for restraint distances against buckling about x and y axes. If a `None` value is provided, lateral restraint distance is assumed as equal to member length *L*. If *L_a* is input as a single float value, i.e. not as a dictionary, the value is assumed as the restraint distance for both x and y directions.
