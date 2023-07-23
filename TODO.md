@@ -16,10 +16,11 @@
     - add A17
 
 ### section.py
-- nominal vs actual section sizes
+- method for nominal vs actual section sizes
 
 ### member.py
-- L_a different inputs for x-axis and y-axis compressive buckling?
+- y direction bending
+- bearing capacity method
 
 ### AS1684 loadings
 - clean up code, change from functions to classes

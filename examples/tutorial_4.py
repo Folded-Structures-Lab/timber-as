@@ -7,7 +7,7 @@ from timberas.member import (
     GlulamMember,
     ApplicationCategory,
     DurationFactorStrength,
-    BendingRestraint,
+    RestraintEdge,
 )
 
 
@@ -30,11 +30,12 @@ member_dict = {
     "r": 0,
     "L": 2700,
     "L_a": {"x": None, "y": 450},
-    "restraint": BendingRestraint.DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE,
+    "restraint_edge": RestraintEdge.COMPRESSION,
 }
 member = BoardMember(**member_dict)
-member.report(["S1", "k_12_bend", "M_d", "L_CLR"])
-print("(ANS: S1 = 8.87, k_12_bend = 1.0, M_d = 9.75kNm)")
+member.report(["S1", "k_12_bend", "M_d", "L_CLR", "CLR"])
+print("(ANS: k_12_bend = 1.0, M_d = 9.75kNm)")
+# S1 = 8.87 in Timber Handbook Example as it doesn't use L<L_CLR check first
 
 
 ############################
@@ -57,11 +58,12 @@ member_dict = {
     "r": 0.25,
     "L": 4000,
     "L_a": {"x": None, "y": 450},
-    "restraint": BendingRestraint.DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE,
+    "restraint_edge": RestraintEdge.COMPRESSION,
 }
 member = GlulamMember(**member_dict)
 member.report(["S1", "k_12_bend", "M_d", "V_d"])
-print("(ANS: S1 = 6.39, k_12_bend = 1.0, M_d = 41.7 kNm, V_d = 71.6 kN)")
+print("(ANS: k_12_bend = 1.0, M_d = 41.7 kNm, V_d = 71.6 kN)")
+# S1 = 6.39 in Timber Handbook Example as it doesn't use L<L_CLR check first
 
 print("b) Permanent load case")
 member.update_k_1(DurationFactorStrength.FIFTY_YEARS)

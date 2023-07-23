@@ -20,8 +20,9 @@ Input and evaluation of bending design parameters using *timberas* is detailed f
 
 *Example 5.1, Timber Design Handbook (page 333)*:
 > 
-> TODO
-> (a) 
+> Check the bending design capacity of a formwork bearer. The bearer spans 2.7m, is a nominal 250 mm x 50 mm section, and is made from unseasoned F11 messmate timber. Joists are skew-nailed to the top edge of the bearer at 450mm centres.
+> 
+
 Solution: 
 ```
 from timberas.geometry import TimberSection as TS
@@ -30,7 +31,7 @@ from timberas.member import (
     BoardMember,
     ApplicationCategory,
     DurationFactorStrength,
-    BendingRestraint,
+    RestraintEdge,
 )
 
 sec = TS.from_library("Nominal 250x50")
@@ -44,11 +45,12 @@ member_dict = {
     "r": 0,
     "L": 2700,
     "L_a": {"x": None, "y": 450},
-    "restraint": BendingRestraint.DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE,
+    "restraint_edge": RestraintEdge.COMPRESSION,
 }
 member = BoardMember(**member_dict)
-member.report(["S1", "k_12_bend", "M_d", "L_CLR"])
-#(ANS: S1 = 8.87, k_12_bend = 1.0, M_d = 9.75kNm)
+member.report(["S1", "k_12_bend", "M_d", "L_CLR", "CLR"])
+
+#(ANS: k_12_bend = 1.0, M_d = 9.75kNm)
 ```
 
 
@@ -60,14 +62,29 @@ Bending design parameters are derived from member inputs as follows:
 - Characteristic bending strength $f_b$ is a *TimberMaterial* attribute.
 - Strength sharing factor $k_9$ (Ref. Cl 2.4.5) is implemented in *TimberMember* child classes:
     - For *GlulamMember*, $k_9$ always equals 1.0. 
-    - For *BoardMember*, $k_9$ is evaluated from additional input *n_mem* (number of members spaced parellel to each other) and *s* (member spacing). Parameter *n_com* (number of elements fastened together in member) is a *TimberSection* attribute.
- 
--  Stability factors for x-axis *k_12_x* and y-axis *k_12_y* buckling are derived from:
-    - Material constant $\rho_C$ - requires a load-dependent ratio parameter $r$ (temporary design action / permanent design action).
-    - Slenderness coefficients for x-axis *S_3* and y-axis *S_4* - requires member length *L* and effective length factor *g_13*. 
-    - Intermediate lateral restraint will be discussed in the next section.
+    - For *BoardMember*, $k_9$ is evaluated from additional input *n_mem* (number of members spaced parallel to each other) and *s* (member spacing). Parameter *n_com* (number of elements fastened together in member) is a *TimberSection* attribute.
+-  Stability factor for bending $k_{12}$  (Ref. Cl 3.2.4) is derived from:
+    - Material constant $\rho_B$ - requires a load-dependent ratio parameter $r$ (temporary design action / permanent design action).
+    - Slenderness coefficient $S1$ - requires lateral restraint information (distance between restraint and restrained edge condition).
 
+Distance between lateral restraints on the tension or compression edge is $L_{ay}$, using the same input as for lateral restraint against compressive buckling:
+```
+"L_a": {"x": None, "y": 450}
+```
 
+The restraint edge condition is specified with the *restraint_edge* attribute. This accepts a string value (e.g. "compression" for compression edge) or a *RestraintEdge* enum class attribute; the latter gives type-safe input of available restraint edge conditions.
+```
+"restraint_edge": RestraintEdge.COMPRESSION,
+```
+The timber member will self-evaluate whether the distance between lateral restraints is sufficient to provide continuous lateral restraint (CLR). If $L_{ay}<=L_{CLR}$, the member is considered continuously restrained (*CLR* = True). If not, it is considered as having discrete restraints (*CLR*=False).
+
+For the special case of continuous tension edge restraint with discrete torsional restraint, distance between torsional restraints is provided with a *phi* key in the *L_a* input dictionary:
+```
+"restraint_edge": RestraintEdge.TENSION_AND_TORSIONAL,
+"L_a": {"x": None, "y": 450, "phi" = 900}
+``` 
+
+Bending capacity is currently evaluated about the x-axis only, using $S1$ if the $x$ direction is the major axis ($k_{12}<=1.0$), or $S2$ otherwise if $x$ is the minor axis ($k_{12}=1.0$). 
 
 ## Shear Capacity
 
@@ -80,8 +97,10 @@ Input and evaluation of shear design parameters using *timberas* is detailed fur
 
 *Example 5.6, Timber Design Handbook (page 401)*:
 > 
-> TODO
-> (a) 
+> Evaluate the design bending and shear capacities of a GL12 floor beam member under a:
+> (a) permanent and short-term (5 day) load case; and
+> (b) permanent load case  
+> The floor beam has a 4 m design span and supports an office floor in a building in Victoria. Joists are attached to the top of the beam with nailed straps at 450 mm spacing. 
 Solution: 
 ```
 from timberas.geometry import TimberSection as TS
@@ -90,10 +109,10 @@ from timberas.member import (
     GlulamMember,
     ApplicationCategory,
     DurationFactorStrength,
-    BendingRestraint,
+    RestraintEdge,
 )
 
-#(a) Permanent and short-term (5 day) load case
+#(a) Permanent and short-term (5 day) load case"
 sec = TS.from_library("GL395x85")
 mat = TM.from_library("GL12")
 mat.update_from_section_size(sec.d)
@@ -105,11 +124,11 @@ member_dict = {
     "r": 0.25,
     "L": 4000,
     "L_a": {"x": None, "y": 450},
-    "restraint": BendingRestraint.DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE,
+    "restraint_edge": RestraintEdge.COMPRESSION,
 }
 member = GlulamMember(**member_dict)
 member.report(["S1", "k_12_bend", "M_d", "V_d"])
-#(ANS: S1 = 6.39, k_12_bend = 1.0, M_d = 41.7 kNm, V_d = 71.6 kN)
+#(ANS: k_12_bend = 1.0, M_d = 41.7 kNm, V_d = 71.6 kN)
 
 #(b) Permanent load case
 member.update_k_1(DurationFactorStrength.FIFTY_YEARS)

@@ -51,6 +51,8 @@ print(material.f_b)
 
 Several material properties in AS1720 are influenced by the timber section size. The *TimberMaterial* *update_from_section_size* method updates a material's properties based on its material type and input section dimensions. For example:
 ```
+from timberas.material import TimberMaterial
+
 #define material
 material = TimberMaterial.from_library("MGP10")
 print(f"Unmodified material strengths: {material.f_b}, {material.f_t}")

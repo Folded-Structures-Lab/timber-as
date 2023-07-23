@@ -226,7 +226,7 @@ member_dict = {
     "L_a": {"x": None, "y": 1650},
 }
 member = BoardMember(**member_dict)
-member.report(["L_ax", "L_ay", "k_4])
+member.report(["L_ax", "L_ay", "k_4"])
 member.report(["S3", "S4", "k_12_c", "N_dc", "N_dcx", "N_dcy"])
 #(ANS: S3 = 20.1, S4 = 35.1, k_12_c = 0.139, N_dc = 7.05 kN)
 

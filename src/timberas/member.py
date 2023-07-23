@@ -3,11 +3,11 @@ TODO
 """
 from __future__ import annotations
 import math
-from math import nan, isnan, floor, log10
-from enum import auto, IntEnum, Enum
+from math import isnan, floor, log10
+from enum import IntEnum, Enum
 from dataclasses import dataclass, field
 from timberas.material import TimberMaterial
-from timberas.geometry import TimberSection, ShapeType
+from timberas.geometry import TimberSection
 from timberas.utils import nomenclature_AS1720 as NOMEN
 
 
@@ -63,14 +63,13 @@ class DurationFactorStrength(float, Enum):
     # DL_AND_LONG_TERM_LL = 0.57
 
 
-class BendingRestraint(str, Enum):
+class RestraintEdge(str, Enum):
     """compression edge is critical edge"""
 
-    DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE = auto()
-    DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE = auto()
-    CONTINUOUS_LATERAL_RESTRAINT_COMPRESSION_EDGE = auto()
-    CONTINUOUS_LATERAL_RESTRAINT_TENSION_EDGE = auto()
-    CONTINUOUS_LATERAL_RESTRAINT_TENSION_AND_DISCRETE_TORSIONAL_COMPRESSION = auto()
+    TENSION = "tension"
+    COMPRESSION = "compression"
+    BOTH = "both"  # uses compression edge formulas
+    TENSION_AND_TORSIONAL = "tension_and_torsional"
 
 
 # def locations_latitudes():
@@ -104,9 +103,7 @@ class TimberMember:
     g_13: float | dict = 1
     k_1: float = 1.0
     r: float = 0.25  # ratio of temporary to total design action effect
-    restraint: str | BendingRestraint = (
-        BendingRestraint.DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE
-    )
+    restraint_edge: str | RestraintEdge = RestraintEdge.TENSION
 
     N_dt: float = field(init=False)  # kN
     N_dcx: float = field(init=False)  # kN
@@ -360,6 +357,15 @@ class TimberMember:
         return l_ay
 
     @property
+    def L_a_phi(self) -> float:
+        """distance between effective torsional restraint against buckling, Cl 3.2.3.2(b)."""
+        if isinstance(self.L_a, dict) and "phi" in self.L_a:
+            return self.L_a["phi"]
+        raise KeyError(
+            "no torsional restraint distance L_a_phi provided, i.e. not 'phi' key in L_a input"
+        )
+
+    @property
     def rho_b(self) -> float:
         """Section E2, AS1720.1:2010"""
         r = self.r if self.r > 0 else 0.25
@@ -373,6 +379,10 @@ class TimberMember:
     @property
     def L_CLR(self) -> float:
         """Clause"""
+        raise NotImplementedError
+
+    @property
+    def CLR(self) -> bool:
         raise NotImplementedError
 
     @property
@@ -400,7 +410,7 @@ class TimberMember:
 
     @property
     def k_6(self) -> float:
-        """Çlause 2.4.3, AS1720.1:2010"""
+        """Clause 2.4.3, AS1720.1:2010"""
         return self.k_6_lookup(self.mat.seasoned, self.high_temp_latitude)
 
     @property
@@ -431,6 +441,10 @@ class TimberMember:
     def k_12_bend(self) -> float:
         """Modification factor for stability, to allow for slenderness effects on bending
         strength. Clause 3.2.4, AS1720.1:2010."""
+        if self.sec.I_x < self.sec.I_y:
+            # x axis is minor axis
+            print("note - x-axis is minor axis, k_12_bend = 1.0")
+            return 1.0
         return self.calc_k12_bending(self.rho_b, self.S1)
 
     def k_6_lookup(self, seasoned: bool, high_temp_latitude: float) -> float:
@@ -468,21 +482,41 @@ class RectangleMemberStabilityMixin:
 
     @property
     def S1(self) -> float:
-        """Clause 3.2.3.2(b), AS1720.1:2010"""
+        """Clause   (b), AS1720.1:2010"""
         # Continuous restraint, tension edge
         # NOTE -> self.b for single and multiboard?
-        match self.restraint:
-            case BendingRestraint.DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE:
-                val = 1.25 * self.sec.d / self.sec.b * (self.L_ay / self.sec.d) ** 0.5
-            case BendingRestraint.DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE:
-                val = (self.sec.d / self.sec.b) ** 1.35 * (
-                    self.L_ay / self.sec.d
-                ) ** 0.25
-            case BendingRestraint.CONTINUOUS_LATERAL_RESTRAINT_COMPRESSION_EDGE:
-                val = 2.25 * self.sec.d / self.sec.b
-            case BendingRestraint.CONTINUOUS_LATERAL_RESTRAINT_TENSION_EDGE:
-                bot = (((math.pi * self.sec.d) / self.L_ar) ** 2 + 0.4) ** 0.5
-                val = 1.5 * (self.sec.d / self.sec.b) / bot
+
+        if self.CLR:
+            # continuous restraint
+            match self.restraint_edge:
+                case RestraintEdge.COMPRESSION | RestraintEdge.BOTH:
+                    # continuous compression - Cl 3.2.3.2(b)
+                    val = 0
+                case RestraintEdge.TENSION:
+                    # continuous tension - Eq 3.2(7)
+                    val = 2.25 * self.sec.d / self.sec.b
+                case RestraintEdge.TENSION_AND_TORSIONAL:
+                    # continuous tension - Eq 3.2(8)
+                    bot = (((math.pi * self.sec.d) / self.L_a_phi) ** 2 + 0.4) ** 0.5
+                    val = 1.5 * (self.sec.d / self.sec.b) / bot
+        else:
+            # discrete restraint
+            match self.restraint_edge:
+                case RestraintEdge.COMPRESSION | RestraintEdge.BOTH:
+                    # discrete compression - Cl 3.2.3.2(a), Eq 3.2(4)
+                    val = (
+                        1.25 * self.sec.d / self.sec.b * (self.L_ay / self.sec.d) ** 0.5
+                    )
+                case RestraintEdge.TENSION:
+                    # discrete tension edge Cl 3.2.3.2(a), Eq 3.2(5)
+                    val = (self.sec.d / self.sec.b) ** 1.35 * (
+                        self.L_ay / self.sec.d
+                    ) ** 0.25
+                case RestraintEdge.TENSION_AND_TORSIONAL:
+                    raise ValueError(
+                        "restraint_edge error - discrete (non-continuous) tension edge"
+                        "restraint defined with torsional restraint - no formula for S1"
+                    )
 
         return round(val, 2)
 
@@ -495,8 +529,17 @@ class RectangleMemberStabilityMixin:
     @property
     def L_CLR(self) -> float:
         """3.2.3.2"""
+        # Eq 3.2(6)
         val = 64 / self.sec.d * (self.sec.b / self.rho_b) ** 2
         return val
+
+    @property
+    def CLR(self) -> bool:
+        # evaluate if lateral restraint is continuous
+        if self.L_ay <= self.L_CLR:
+            # continuous restraint
+            return True
+        return False
 
 
 class BoardMember(RectangleMemberStabilityMixin, TimberMember):
