@@ -54,7 +54,7 @@ member = BoardMember(
 member.report(["k_1", "N_dt"])
 #(ANS: N_dt = 14.5 kN)"
 
-# 3.3b) update member load duration factor and output
+# 3.3(b) update member load duration factor and output
 member.update_k_1(DurationFactorStrength.FIVE_SECONDS)
 member.report(["k_1", "N_dt"], with_nomenclature=True, with_clause=True)
 ```
@@ -100,7 +100,7 @@ member.report(["k_1", "N_dt"])
 
 The *member.update_k_1()* method can be used to change the load duration factor and resolve member capacities:
 ```
-# 3.3b) update member load duration factor and output
+# 3.3(b) update member load duration factor and output
 member.update_k_1(DurationFactorStrength.FIVE_SECONDS)
 member.report(["k_1", "N_dt"], with_nomenclature=True, with_clause=True)
 ```
@@ -113,7 +113,7 @@ $$
 N_{d,c} = \phi k_1 k_4 k_6 k_{12} f_c A_c
 $$
 
-The stability factor $k_{12}$ (Ref. Cl 3.3.3) accounts for the potential of buckling failure about $x$ or $y$ axes. Thus, *timberas* evaluates stability and compressive capacity about both axes, using then then minimum as the governing design compressive capacity:
+The stability factor for lateral bucking under compression $k_{12}$ (Ref. Cl 3.3.3) accounts for the potential of buckling failure about $x$ or $y$ axes. Thus, *timberas* evaluates stability and compressive capacity about both axes, using then then minimum as the governing design compressive capacity:
 $$
 N_{d,cx} = \phi k_1 k_4 k_6 k_{12,x} f_c A_c
 $$
@@ -178,7 +178,7 @@ The effective length factor can be input as a numerical value, or using the *Eff
 
 Effective length factors can also be input for both x and y directions using a dictionary input for *g_13*. For example, extending the above code for Solution 4.1(b):
 ```
-#b) update end fixity - assume as semi-rigid from bolt group
+#(b) update end fixity - assume as semi-rigid from bolt group
 member.g_13 = {
     "x": EffectiveLengthFactor.BOLTED_END_RESTRAINT,
     "y": EffectiveLengthFactor.PINNED_PINNED,
@@ -212,7 +212,7 @@ from timberas.geometry import TimberSection as TS, ShapeType
 from timberas.material import TimberMaterial as TM
 from timberas.member import BoardMember, ApplicationCategory, EffectiveLengthFactor
 
-#a) stud wall, 1650mm noggins
+#(a) stud wall, 1650mm noggins
 member_dict = {
     "sec": TS(d=147, b=47, name="Nominal 150 x 50", shape_type=ShapeType.SINGLE_BOARD),
     "mat": TM.from_library("F7 Unseasoned Softwood"),
@@ -230,7 +230,7 @@ member.report(["L_ax", "L_ay", "k_4])
 member.report(["S3", "S4", "k_12_c", "N_dc", "N_dcx", "N_dcy"])
 #(ANS: S3 = 20.1, S4 = 35.1, k_12_c = 0.139, N_dc = 7.05 kN)
 
-#b) increase capacity from additional lateral restraint L_ay = 1100 mm
+#(b) increase capacity from additional lateral restraint L_ay = 1100 mm
 member.L_a = {"x": None, "y": 1100}
 member.solve_capacities()
 member.report(["L_ax", "L_ay"])

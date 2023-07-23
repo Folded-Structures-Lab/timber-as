@@ -2,14 +2,8 @@
 # TODO
 
 ### Timber Handbook Capacity Examples
-- [X] 3.1 f_t
-- [X] 3.3 design tensile capacity Nd,t
-- [X] 4.1 design compression capacity N_c
-- [ ] 4.2 capacity of spaced columns
-- [X] 4.3 load-bearing stud wall capacity check
-- [X] 4.4 load-bearing stud wall capacity change
-- [X] 5.1 bending design capacity
-- [X] 5.6 floor beam design capacity
+- EG4.2 capacity of spaced columns
+- EG5.6 floor beam design capacity, serviceability and bearing capacity check
 
 
 ### Timber Handbook Design Examples

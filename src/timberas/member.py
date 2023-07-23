@@ -7,7 +7,7 @@ from math import nan, isnan, floor, log10
 from enum import auto, IntEnum, Enum
 from dataclasses import dataclass, field
 from timberas.material import TimberMaterial
-from timberas.geometry import TimberSection
+from timberas.geometry import TimberSection, ShapeType
 from timberas.utils import nomenclature_AS1720 as NOMEN
 
 
@@ -64,7 +64,7 @@ class DurationFactorStrength(float, Enum):
 
 
 class BendingRestraint(str, Enum):
-    """compresssion edge is critical edge"""
+    """compression edge is critical edge"""
 
     DISCRETE_LATERAL_RESTRAINT_COMPRESSION_EDGE = auto()
     DISCRETE_LATERAL_RESTRAINT_TENSION_EDGE = auto()
@@ -98,13 +98,9 @@ class TimberMember:
     high_temp_latitude: bool = False
     consider_partial_seasoning: bool = False
 
-    n_com: int = 1
-    n_mem: int = 1
-    member_spacing: float = 0  # member spacing
-
     L: float = 1  # length
     L_a: float | dict | None = None
-    L_ar: float = nan  # torsional constraint, compression edge
+    # L_ar: float = nan  # torsional constraint, compression edge
     g_13: float | dict = 1
     k_1: float = 1.0
     r: float = 0.25  # ratio of temporary to total design action effect
@@ -467,7 +463,7 @@ class TimberMember:
             return 200 / ((rho_times_s) ** 2)
 
 
-class BoardMember(TimberMember):
+class RectangleMemberStabilityMixin:
     """TODO"""
 
     @property
@@ -497,21 +493,33 @@ class BoardMember(TimberMember):
         return round(self.g_13_x * self.L / self.sec.d, 2)
 
     @property
-    def k_9(self) -> float:
-        """Clause 2.4.5.3, AS1720.1:2010"""
-        return max(
-            self.g_31
-            + (self.g_32 - self.g_31) * (1 - (2 * self.member_spacing / self.L)),
-            1,
-        )
-
-    # for n in n_all:
-
-    @property
     def L_CLR(self) -> float:
         """3.2.3.2"""
         val = 64 / self.sec.d * (self.sec.b / self.rho_b) ** 2
         return val
+
+
+class BoardMember(RectangleMemberStabilityMixin, TimberMember):
+    """TODO"""
+
+    # member spacing parameters for k_9 evaluation
+    # n_com: int = 1
+    n_mem: int = 1
+    s: float = 0  # member spacing
+
+    @property
+    def k_9(self) -> float:
+        """Clause 2.4.5.3, AS1720.1:2010"""
+        return max(
+            self.g_31 + (self.g_32 - self.g_31) * (1 - (2 * self.s / self.L)),
+            1,
+        )
+
+    @property
+    def n_com(self) -> int:
+        if self.sec.n > 1:
+            return self.sec.n
+        return 1
 
     @property
     def g_31(self) -> float:
@@ -558,7 +566,7 @@ class BoardMember(TimberMember):
     #     return g32
 
 
-class GlulamMember(BoardMember):
+class GlulamMember(RectangleMemberStabilityMixin, TimberMember):
     """TODO"""
 
     @property

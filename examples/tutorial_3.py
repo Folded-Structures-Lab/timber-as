@@ -1,3 +1,5 @@
+"""Example timberas code for evaluation of member tension and compression capacities"""
+
 from timberas.geometry import TimberSection, ShapeType
 from timberas.material import TimberMaterial
 from timberas.member import (

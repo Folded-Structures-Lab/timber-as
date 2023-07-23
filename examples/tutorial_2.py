@@ -1,4 +1,4 @@
-"""Getting Started Examples"""
+"""Example timberas code for defining sections and materials"""
 
 
 ############################
