@@ -21,7 +21,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from math import nan, isnan, floor, log10
-from enum import Enum
+from enum import Enum, auto
 import pandas as pd
 
 
@@ -202,7 +202,7 @@ def import_section_library() -> pd.DataFrame:
     """
     Imports a section library from a CSV file.
 
-    The CSV file is located at 'timberas.data/section_library.csv'.
+    The CSV file is located at 'timberas/data/section_library.csv'.
 
     Returns:
         pd.DataFrame: A DataFrame containing the contents of the section library CSV file.

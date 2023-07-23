@@ -7,8 +7,10 @@
 # Contents
 - [Installation](install.md)
 - Tutorials
-    - [Getting Started I](tutorial-1.md): Create timber sections and materials
-    - [Getting Started II](tutorial-2.md) Create a timber member and solve member design capacities. 
+    - [Quick Start](tutorial-1.md)
+    - [Sections and Materials](tutorial-2.md)
+    - [Tension and Compression Capacity](tutorial-3.md) 
+    - [Bending and Shear Capacity](tutorial-4.md) 
 - [API Reference](reference.md)
 
 

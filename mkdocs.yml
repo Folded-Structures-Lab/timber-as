@@ -31,10 +31,21 @@ nav:
     - About: index.md
     - Installation: install.md
   - Tutorials: 
-    - Getting Started I: tutorial-1.md
-    - Getting Started II: tutorial-2.md
+    - Quick Start: tutorial-1.md
+    - Sections and Materials: tutorial-2.md
+    - Tension and Compression Capacity: tutorial-3.md
+    - Bending and Shear Capacity: tutorial-4.md
   - Technical:
     - API Reference: reference.md
 
 watch:
   - src/timberas
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
